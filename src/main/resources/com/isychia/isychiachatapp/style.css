@@ -1,0 +1,127 @@
+.root {
+    -fx-font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.list-view {
+    -fx-background-color: #2C2F33;
+    -fx-control-inner-background: #2C2F33;
+    -fx-border-width: 0;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-padding: 0;
+}
+
+.list-cell:filled:selected {
+    -fx-background-color: #393C43;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #33363C;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: #2C2F33;
+    -fx-pref-width: 12px;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #202225;
+    -fx-background-radius: 5px;
+}
+
+.message-input {
+    -fx-background-radius: 18px;
+    -fx-padding: 10px 15px;
+}
+
+.rounded-button {
+    -fx-background-color: #40444B;
+    -fx-text-fill: white;
+    -fx-background-radius: 50%;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-max-width: 30px;
+    -fx-max-height: 30px;
+}
+
+.send-button {
+    -fx-background-color: #7289DA;
+    -fx-text-fill: white;
+    -fx-background-radius: 18px;
+    -fx-padding: 8px 16px;
+    -fx-font-weight: bold;
+}
+
+.send-button:hover {
+    -fx-background-color: #5e73bc;
+}
+
+.chat-header-button {
+    -fx-background-color: #4F545C;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+    -fx-padding: 5px 10px;
+}
+
+.chat-header-button:hover {
+    -fx-background-color: #5d6269;
+}
+
+.search-field {
+    -fx-background-radius: 4px;
+    -fx-padding: 8px;
+}
+/* Login and Registration Styles */
+.auth-container {
+    -fx-background-color: #36393F;
+    -fx-padding: 30px;
+    -fx-spacing: 20px;
+    -fx-alignment: center;
+}
+
+.auth-field {
+    -fx-background-color: #40444B;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #72767D;
+    -fx-background-radius: 4px;
+    -fx-padding: 10px;
+    -fx-pref-width: 300px;
+}
+
+.auth-button {
+    -fx-background-color: #7289DA;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+    -fx-padding: 10px 15px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 300px;
+}
+
+.auth-button:hover {
+    -fx-background-color: #5e73bc;
+}
+
+.auth-link {
+    -fx-text-fill: #7289DA;
+    -fx-underline: true;
+    -fx-cursor: hand;
+}
+
+.auth-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.auth-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: #B9BBBE;
+}
+
+.error-label {
+    -fx-text-fill: #ed4245;
+    -fx-font-size: 12px;
+}
