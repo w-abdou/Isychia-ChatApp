@@ -1,6 +1,9 @@
 package com.isychia.isychiachatapp;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String username;
     private String email;
     private String password;
@@ -13,7 +16,6 @@ public class User {
         this.status = "Online";
     }
 
-    // Getters and setters
     public String getUsername() {
         return username;
     }

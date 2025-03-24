@@ -1,83 +1,165 @@
 package com.isychia.isychiachatapp;
 
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 public class UserService {
-    private static UserService instance;
-    private Map<String, User> usersByEmail;
     private Map<String, User> usersByUsername;
+    private Map<String, User> usersByEmail;
     private User currentUser;
 
-    private UserService() {
-        usersByEmail = new HashMap<>();
+    public UserService() {
         usersByUsername = new HashMap<>();
-
-        // Add some demo users
-        addDemoUsers();
-    }
-
-    public static UserService getInstance() {
-        if (instance == null) {
-            instance = new UserService();
-        }
-        return instance;
-    }
-
-    private void addDemoUsers() {
-        // Add demo users
-        String[] users = {"Verue", "Farida", "Mahmoud", "Ahmed", "Hassan"};
-
-        for (String username : users) {
-            String email = username.toLowerCase() + "@example.com";
-            User user = new User(username, email, "password123");
-            usersByEmail.put(email, user);
-            usersByUsername.put(username, user);
-        }
+        usersByEmail = new HashMap<>();
     }
 
     public boolean registerUser(String username, String email, String password) {
-        // Check if email or username already exists
-        if (usersByEmail.containsKey(email) || usersByUsername.containsKey(username)) {
+        if (username == null || email == null || password == null ||
+                username.trim().isEmpty() || email.trim().isEmpty() || password.trim().isEmpty()) {
             return false;
         }
 
-        // Create new user and add to maps
-        User user = new User(username, email, password);
-        usersByEmail.put(email, user);
-        usersByUsername.put(username, user);
+        if (usersByUsername.containsKey(username) || usersByEmail.containsKey(email)) {
+            return false;
+        }
+
+        User newUser = new User(username, email, password);
+        usersByUsername.put(username, newUser);
+        usersByEmail.put(email, newUser);
         return true;
     }
 
-    public User loginUser(String identifier, String password) {
-        User user = null;
 
-        // Check if identifier is an email
-        if (identifier.contains("@")) {
-            user = usersByEmail.get(identifier);
-        } else {
-            // Otherwise treat it as a username
-            user = usersByUsername.get(identifier);
-        }
-
-        // Check if user exists and password matches
+    public boolean login(String username, String password) {
+        User user = usersByUsername.get(username);
         if (user != null && user.getPassword().equals(password)) {
             currentUser = user;
-            return user;
+            return true;
         }
+        return false;
+    }
 
-        return null;
+
+    public void logout() {
+        currentUser = null;
     }
 
     public User getCurrentUser() {
         return currentUser;
     }
 
-    public void logout() {
-        currentUser = null;
+    public boolean updateUserProfile(String oldUsername, String newUsername, String newEmail) {
+        // Get the user
+        User user = usersByUsername.get(oldUsername);
+        if (user == null) {
+            return false;
+        }
+
+        // Check if new username or email is already taken (by another user)
+        if (!oldUsername.equals(newUsername) && usersByUsername.containsKey(newUsername)) {
+            return false;
+        }
+
+        if (!user.getEmail().equals(newEmail) && usersByEmail.containsKey(newEmail)) {
+            return false;
+        }
+
+        // If username is changing, update maps
+        if (!oldUsername.equals(newUsername)) {
+            usersByUsername.remove(oldUsername);
+            user.setUsername(newUsername);
+            usersByUsername.put(newUsername, user);
+        }
+
+        // If email is changing, update maps
+        if (!user.getEmail().equals(newEmail)) {
+            usersByEmail.remove(user.getEmail());
+            user.setEmail(newEmail);
+            usersByEmail.put(newEmail, user);
+        }
+
+        // If this is the current user, update reference
+        if (currentUser != null && currentUser.getUsername().equals(oldUsername)) {
+            currentUser = user;
+        }
+
+        return true;
+    }
+
+    public boolean updateUserPassword(String username, String newPassword) {
+        User user = usersByUsername.get(username);
+        if (user == null) {
+            return false;
+        }
+
+        user.setPassword(newPassword);
+        return true;
+    }
+
+    public boolean updateUserStatus(String username, String newStatus) {
+        User user = usersByUsername.get(username);
+        if (user == null) {
+            return false;
+        }
+
+        user.setStatus(newStatus);
+        return true;
+    }
+
+    public boolean deleteUser(String username) {
+        User user = usersByUsername.get(username);
+        if (user == null) {
+            return false;
+        }
+
+        // Remove user from maps
+        usersByUsername.remove(username);
+        usersByEmail.remove(user.getEmail());
+
+        // If this was the current user, set current user to null
+        if (currentUser != null && currentUser.getUsername().equals(username)) {
+            currentUser = null;
+        }
+
+        return true;
+    }
+
+    public boolean isUsernameTaken(String username) {
+        return usersByUsername.containsKey(username);
+    }
+
+    public boolean isEmailTaken(String email) {
+        return usersByEmail.containsKey(email);
+    }
+
+    public void saveUsersToFile(String filePath) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
+            oos.writeObject(usersByUsername);
+            oos.writeObject(usersByEmail);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void loadUsersFromFile(String filePath) {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            return;
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            usersByUsername = (Map<String, User>) ois.readObject();
+            usersByEmail = (Map<String, User>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public Map<String, User> getAllUsers() {
-        return usersByUsername;
+        return new HashMap<>(usersByUsername);
     }
 }

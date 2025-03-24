@@ -30,6 +30,10 @@ public class RegisterUI {
         VBox registrationContainer = new VBox(15);
         registrationContainer.getStyleClass().add("auth-container");
         registrationContainer.setAlignment(Pos.CENTER);
+        emailField = new TextField();
+        emailField.setPromptText("Email");
+        emailField.setPrefWidth(280);
+
 
         // Logo
         Circle logo = new Circle(40);
@@ -60,6 +64,19 @@ public class RegisterUI {
         errorLabel = new Label("");
         errorLabel.getStyleClass().add("error-label");
         errorLabel.setVisible(false);
+
+        emailField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (!newValue.isEmpty()) {
+                if (isValidEmail(newValue)) {
+                    emailField.setStyle("-fx-border-color: green;");
+                } else {
+                    emailField.setStyle("-fx-border-color: red;");
+                }
+            } else {
+                emailField.setStyle("");
+            }
+        });
+
 
         // Register button
         Button registerButton = new Button("Register");
@@ -100,9 +117,15 @@ public class RegisterUI {
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
 
-        // Basic validation
-        if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            showError("Please fill in all fields");
+        // Input validation
+        if (username.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
+            showError("All fields are required");
+            return;
+        }
+
+        // Email validation
+        if (!isValidEmail(email)) {
+            showError("Please enter a valid email address");
             return;
         }
 
@@ -111,24 +134,15 @@ public class RegisterUI {
             return;
         }
 
-        if (!email.contains("@") || !email.contains(".")) {
-            showError("Please enter a valid email address");
-            return;
-        }
+        // Registration logic
+        boolean registrationSuccess = userService.registerUser(username, email, password);
 
-        if (password.length() < 6) {
-            showError("Password must be at least 6 characters");
-            return;
-        }
+        if (registrationSuccess) {
+            // Registration was successful
+            // momken ne3ml otp!??
 
-        // Try to register
-        boolean success = userService.registerUser(username, email, password);
-        if (success) {
-            // Registration successful - go to login
             resetForm();
-            if (showLoginScreen != null) {
-                showLoginScreen.run();
-            }
+            showLoginScreen.run();
         } else {
             showError("Username or email already exists");
         }
@@ -137,6 +151,21 @@ public class RegisterUI {
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
+    }
+
+    private boolean isValidUsername(String username) {
+        String usernameRegex = "^[a-zA-Z0-9_]+$";
+        return username != null && username.matches(usernameRegex);
+    }
+
+    private boolean isValidPassword(String password) {
+        String passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/? ])(?=\\S+$).{6,}$";
+        return password != null && password.matches(passwordRegex);
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        return email != null && email.matches(emailRegex);
     }
 
     public void resetForm() {

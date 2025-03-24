@@ -16,8 +16,7 @@ public class Main extends Application {
         primaryStage.setTitle("IsychiaChat");
 
         // Initialize services
-        userService = UserService.getInstance();
-
+        userService = new UserService();
         // Initialize UI components
         initializeUI();
 
@@ -69,18 +68,6 @@ public class Main extends Application {
     private void handleLogout() {
         userService.logout();
         showLoginScreen();
-    }
-
-    // Add your backend methods here
-
-    // For example:
-    private void initializeBackendServices() {
-        // Initialize any backend services, database connections, etc.
-    }
-
-    // Example of a server communication method
-    private void sendMessageToServer(String message, String recipient) {
-        // Implement server communication
     }
 
     public static void main(String[] args) {
