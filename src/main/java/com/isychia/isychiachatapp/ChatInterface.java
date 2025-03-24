@@ -10,6 +10,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.input.KeyCode;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,9 +30,12 @@ public class ChatInterface {
     private String currentChatUser;
     private User currentUser;
     private UserService userService;
+    private Runnable onOpenProfileAction;
+
 
     // Callback
     private Runnable onLogoutAction;
+
 
     private final String[] statusOptions = {"Online", "Away", "Busy"};
     private final Color[] avatarColors = {
@@ -147,6 +151,12 @@ public class ChatInterface {
         // Welcome Screen
         welcomePanel = createWelcomePanel();
 
+        chatScene.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ESCAPE) {
+                showWelcomePanel();
+            }
+        });
+
         // Left sidebar with search and contacts
         VBox leftPanel = new VBox(10);
         leftPanel.setPadding(new Insets(0, 0, 10, 0));
@@ -198,13 +208,19 @@ public class ChatInterface {
 
         VBox userInfo = new VBox(2);
         userInfo.getChildren().addAll(nameLabel, statusLabel);
-
         // Contact list item
         HBox contactItem = new HBox(10);
         contactItem.setAlignment(Pos.CENTER_LEFT);
         contactItem.setPadding(new Insets(5, 15, 5, 15));
         contactItem.getChildren().addAll(avatar, userInfo);
 
+        contactItem.setOnMouseClicked(event -> {
+            currentChatUser = username;
+            updateChatHistory();
+            showChatWindow();
+
+            messageInput.requestFocus();
+        });
         return contactItem;
     }
 
@@ -244,17 +260,21 @@ public class ChatInterface {
         nameLabel.setFont(Font.font("System", FontWeight.BOLD, 16));
         nameLabel.setStyle("-fx-text-fill: white;");
 
-        Button callButton = new Button("Call");
+    /**
+
+       Button callButton = new Button("Call");
         callButton.getStyleClass().add("chat-header-button");
 
         Button videoButton = new Button("Video");
         videoButton.getStyleClass().add("chat-header-button");
 
+    **/
+
         HBox chatHeader = new HBox(15);
         chatHeader.setAlignment(Pos.CENTER_LEFT);
         chatHeader.setPadding(new Insets(15));
         chatHeader.setStyle("-fx-background-color: #2F3136; -fx-border-color: #23272A; -fx-border-width: 0 0 1 0;");
-        chatHeader.getChildren().addAll(nameLabel, new Pane(), callButton, videoButton);
+        chatHeader.getChildren().addAll(nameLabel, new Pane()  /** , callButton, videoButton **/   );
         HBox.setHgrow(nameLabel, Priority.ALWAYS);
 
         return chatHeader;
@@ -304,6 +324,14 @@ public class ChatInterface {
         panel.getChildren().addAll(welcomeIcon, welcomeHeader, welcomeText);
 
         return panel;
+    }
+
+    private void showWelcomePanel() {
+        // Clear the current chat selection if any
+        currentChatUser = null;
+
+        // Replace the chat window with the welcome panel in the center area
+        mainLayout.setCenter(welcomePanel);
     }
 
     private VBox createNewChatHistory() {
@@ -404,4 +432,5 @@ public class ChatInterface {
     public void setOnLogoutAction(Runnable action) {
         this.onLogoutAction = action;
     }
+
 }
