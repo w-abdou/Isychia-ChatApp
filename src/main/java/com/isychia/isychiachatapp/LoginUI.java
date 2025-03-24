@@ -88,24 +88,28 @@ public class LoginUI {
     }
 
     private void handleLogin() {
-        String identifier = usernameOrEmailField.getText().trim();
+        // Clear previous errors
+        errorLabel.setText("");
+
+        // Get input values from form fields
+        String username = usernameOrEmailField.getText();
         String password = passwordField.getText();
 
-        if (identifier.isEmpty() || password.isEmpty()) {
-            showError("Please enter all fields");
+        // Validate inputs
+        if (username.isEmpty() || password.isEmpty()) {
+            showError("Username and password are required");
             return;
         }
 
-        User user = userService.loginUser(identifier, password);
-        if (user != null) {
-            // Login successful
-            resetForm();
+        // Try to login
+        boolean loginSuccessful = userService.login(username, password);
+        if (loginSuccessful) {
+            User user = userService.getCurrentUser();
             if (loginCallback != null) {
                 loginCallback.onLoginSuccess(user);
             }
         } else {
-            // Login failed
-            showError("Invalid username/email or password");
+            showError("Invalid username or password");
         }
     }
 
