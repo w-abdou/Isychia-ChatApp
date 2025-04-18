@@ -1,21 +1,31 @@
 package com.isychia.isychiachatapp;
 
-import java.io.Serializable;
+import org.bson.Document;
 
-public class User implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class User {
     private String username;
-    private String email;
     private String password;
-    private String status;
 
-    public User(String username, String email, String password) {
+    public User() {}
+
+    public User(String username, String password) {
         this.username = username;
-        this.email = email;
         this.password = password;
-        this.status = "Online";
     }
 
+    public static User fromDocument(Document doc) {
+        return new User(
+                doc.getString("username"),
+                doc.getString("password")
+        );
+    }
+
+    public Document toDocument() {
+        return new Document("username", username)
+                .append("password", password);
+    }
+
+    // Getters & Setters
     public String getUsername() {
         return username;
     }
@@ -24,27 +34,11 @@ public class User implements Serializable {
         this.username = username;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getPassword() {
         return password;
     }
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 }

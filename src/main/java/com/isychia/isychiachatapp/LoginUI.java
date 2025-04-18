@@ -136,6 +136,15 @@ public class LoginUI {
         this.loginCallback = loginCallback;
     }
 
+    public List<User> getAllUsers() {
+        // Assuming you are using MongoDB:
+        List<User> users = new ArrayList<>();
+        for (Document doc : userCollection.find()) {
+            users.add(User.fromDocument(doc)); // assuming a static converter method
+        }
+        return users;
+    }
+
     // Callback interface
     public interface LoginCallback {
         void onLoginSuccess(User user);

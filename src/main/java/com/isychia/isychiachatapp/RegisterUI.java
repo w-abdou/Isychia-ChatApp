@@ -38,6 +38,7 @@ public class RegisterUI {
         // Logo
         Circle logo = new Circle(40);
         logo.setFill(Color.rgb(114, 137, 218));
+        logo.setStyle("");
 
         // Title
         Label title = new Label("Create an Account");
