@@ -1,30 +1,32 @@
 package com.isychia.isychiachatapp;
 
+import com.mongodb.client.*;
 import org.bson.Document;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.FindIterable;
+import org.bson.conversions.Bson;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.mongodb.client.model.Filters.*;
+
 public class UserService {
 
-    private MongoCollection<Document> userCollection;
-    private User currentUser; // Changed from Document to User
-    private MongoCollection<Document> collection;
+    private final MongoCollection<Document> userCollection;
+    private User currentUser;
 
-    // Constructor that takes a MongoCollection
-    public UserService(MongoCollection<Document> usercollection) {
-        this.collection = usercollection;
+    // MongoDB connection and collection setup
+    public UserService() {
+        MongoClient mongoClient = MongoClients.create("mongodb+srv://woroodabdou:ZdbwsoKdsI22Q532@cluster0.mongodb.net/isychia?retryWrites=true&w=majority");
+        MongoDatabase database = mongoClient.getDatabase("isychia");
+        this.userCollection = database.getCollection("users");
     }
-
 
     // Login method to authenticate user
     public boolean login(String username, String password) {
         Document user = userCollection.find(
-                Filters.and(
-                        Filters.eq("username", username),
-                        Filters.eq("password", password)
+                and(
+                        eq("username", username),
+                        eq("password", password)
                 )
         ).first();
 
@@ -41,22 +43,21 @@ public class UserService {
         return currentUser;
     }
 
-    // Register method (if you want to add this, else leave it out)
-    public boolean registerUser(String username, String password, String email) {
-        // Check if the user already exists
-        Document existingUser = userCollection.find(Filters.eq("username", username)).first();
+    // Register method
+    public boolean registerUser(String username, String email, String password) {
+        // Check if email already exists
+        Document existingUser = userCollection.find(eq("email", email)).first();
         if (existingUser != null) {
-            return false; // User already exists
+            return false; // Email already in use
         }
 
         // Create new user document
         Document newUser = new Document("username", username)
-                .append("password", password)
-                .append("email", email);
+                .append("email", email)
+                .append("password", password); // Reminder: hash in production!
 
-        // Insert new user into collection
         userCollection.insertOne(newUser);
-        return true; // Registration successful
+        return true;
     }
 
     // Get all users as User objects
@@ -64,7 +65,7 @@ public class UserService {
         List<User> users = new ArrayList<>();
         FindIterable<Document> iterable = userCollection.find();
         for (Document doc : iterable) {
-            users.add(User.fromDocument(doc)); // Convert each Document to User
+            users.add(User.fromDocument(doc));
         }
         return users;
     }
@@ -72,5 +73,6 @@ public class UserService {
     // Logout method (clear the current user)
     public void logout() {
         currentUser = null;
+        System.out.println("User has been logged out.");
     }
 }

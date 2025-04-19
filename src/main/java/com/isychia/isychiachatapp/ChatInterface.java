@@ -1,5 +1,6 @@
 package com.isychia.isychiachatapp;
 
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -11,6 +12,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.input.KeyCode;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.function.Function;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -73,7 +77,12 @@ public class ChatInterface {
         chatHistories = new HashMap<>();
 
         // Get all users except current user
-        Map<String, User> allUsers = userService.getAllUsers();
+        List<User> userList = userService.getAllUsers(); // ✅ get the list
+        Map<String, User> allUsers = new HashMap<>();    // ✅ create the map
+        for (User user : userList) {
+            allUsers.put(user.getUsername(), user);      // ✅ fill the map using username as key
+        }
+
         for (User user : allUsers.values()) {
             if (!user.getUsername().equals(currentUser.getUsername())) {
                 chatHistories.put(user.getUsername(), createNewChatHistory());
@@ -91,7 +100,12 @@ public class ChatInterface {
 
         // Chat List (Left Panel)
         chatList = new ListView<>();
-        Map<String, User> allUsers = userService.getAllUsers();
+        List<User> userList = userService.getAllUsers(); // ✅ get the list
+        Map<String, User> allUsers = new HashMap<>();    // ✅ create the map
+        for (User user : userList) {
+            allUsers.put(user.getUsername(), user);      // ✅ fill the map using username as key
+        }
+
         for (User user : allUsers.values()) {
             if (!user.getUsername().equals(currentUser.getUsername())) {
                 chatList.getItems().add(createContactListItem(user.getUsername()));
