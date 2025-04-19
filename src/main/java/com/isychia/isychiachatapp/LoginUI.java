@@ -1,5 +1,10 @@
 package com.isychia.isychiachatapp;
 
+
+import java.util.List;
+import java.util.ArrayList;
+import org.bson.Document;
+import com.mongodb.client.MongoCollection;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -8,6 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import com.isychia.isychiachatapp.UserService;
 
 public class LoginUI {
     private Scene loginScene;
@@ -20,10 +26,16 @@ public class LoginUI {
     private Runnable showRegistrationScreen;
     private LoginCallback loginCallback;
 
+    private MongoCollection<Document> userCollection;
+
+
+
     public LoginUI(UserService userService) {
-        this.userService = userService;
+        this.userService = userService; // ✅ Correct usage
         createLoginScene();
     }
+
+
 
     private void createLoginScene() {
         VBox loginContainer = new VBox(20);

@@ -8,6 +8,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
+import org.bson.Document;
+import com.mongodb.client.MongoCollection;
 
 public class RegisterUI {
     private Scene registrationScene;
@@ -17,6 +19,8 @@ public class RegisterUI {
     private PasswordField confirmPasswordField;
     private Label errorLabel;
     private UserService userService;
+    private MongoCollection<Document> userCollection;
+
 
     // Callback
     private Runnable showLoginScreen;

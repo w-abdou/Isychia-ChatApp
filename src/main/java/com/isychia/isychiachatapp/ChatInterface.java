@@ -17,6 +17,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import com.isychia.isychiachatapp.UserService;
+import org.bson.Document;
+import com.mongodb.client.MongoCollection;
 
 public class ChatInterface {
     private Scene chatScene;
