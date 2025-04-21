@@ -153,6 +153,7 @@ public class RegisterUI {
         }
     }
 
+
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
