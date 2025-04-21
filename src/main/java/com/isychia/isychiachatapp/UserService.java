@@ -12,14 +12,16 @@ import static com.mongodb.client.model.Filters.*;
 public class UserService {
 
     private final MongoCollection<Document> userCollection;
+    private final MongoDatabase database;
     private User currentUser;
 
     // MongoDB connection and collection setup
     public UserService() {
         MongoClient mongoClient = MongoClients.create("mongodb+srv://woroodabdou:ZdbwsoKdsI22Q532@cluster0.mongodb.net/isychia?retryWrites=true&w=majority");
-        MongoDatabase database = mongoClient.getDatabase("isychia");
+        this.database = mongoClient.getDatabase("isychiaDB");
         this.userCollection = database.getCollection("users");
     }
+
 
     // Login method to authenticate user
     public boolean login(String username, String password) {
@@ -45,18 +47,18 @@ public class UserService {
 
     // Register method
     public boolean registerUser(String username, String email, String password) {
-        // Check if email already exists
-        Document existingUser = userCollection.find(eq("email", email)).first();
+        MongoCollection<Document> usersCollection = database.getCollection("users");
+
+        Document existingUser = usersCollection.find(eq("email", email)).first();
         if (existingUser != null) {
             return false; // Email already in use
         }
 
-        // Create new user document
         Document newUser = new Document("username", username)
                 .append("email", email)
-                .append("password", password); // Reminder: hash in production!
+                .append("password", password); // In production, hash this password!
 
-        userCollection.insertOne(newUser);
+        usersCollection.insertOne(newUser);
         return true;
     }
 
@@ -74,5 +76,23 @@ public class UserService {
     public void logout() {
         currentUser = null;
         System.out.println("User has been logged out.");
+    }
+
+
+    public void addUser(User user) {
+        Document newUser = new Document("username", user.getUsername())
+                .append("email", user.getEmail())
+                .append("password", user.getPassword());
+
+        userCollection.insertOne(newUser);
+    }
+
+    public boolean userExists(String email, String username) {
+        Bson filter = or(
+                eq("email", email),
+                eq("username", username)
+        );
+        Document existingUser = userCollection.find(filter).first();
+        return existingUser != null;
     }
 }
