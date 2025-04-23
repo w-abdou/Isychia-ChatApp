@@ -17,8 +17,8 @@ public class UserService {
 
     // MongoDB connection and collection setup
     public UserService() {
-        MongoClient mongoClient = MongoClients.create("mongodb+srv://woroodabdou:ZdbwsoKdsI22Q532@cluster0.mongodb.net/isychia?retryWrites=true&w=majority");
-        this.database = mongoClient.getDatabase("isychiaDB");
+        MongoClient mongoClient = MongoClients.create("mongodb+srv://faridasoliman:farida123@isychia.bbrqq0g.mongodb.net/?retryWrites=true&w=majority&appName=Isychia");
+        this.database = mongoClient.getDatabase("IsychiaDB");
         this.userCollection = database.getCollection("users");
     }
 

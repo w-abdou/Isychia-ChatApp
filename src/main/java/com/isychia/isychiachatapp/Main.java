@@ -34,6 +34,8 @@ public class Main extends Application {
         loginUI = new LoginUI(userService);
         registerUI = new RegisterUI(userService);
         chatInterface = new ChatInterface(userService);
+        //MongoDBConnection mongoDBConnection = new MongoDBConnection();
+        //mongoDBConnection.connectToMongo();
     }
 
     private void setupNavigation() {
