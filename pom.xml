@@ -18,6 +18,11 @@
       <id>central</id>
       <url>https://repo.maven.apache.org/maven2</url>
     </repository>
+
+      <repository>
+          <id>jcenter</id>
+          <url>https://jcenter.bintray.com</url>
+      </repository>
   </repositories>
 
   <dependencies>
@@ -73,7 +78,56 @@
       <groupId>org.kordamp.bootstrapfx</groupId>
       <artifactId>bootstrapfx-core</artifactId>
       <version>0.4.0</version>
-    </dependency><dependency>
+    </dependency>
+      <dependency>
+          <groupId>com.auth0</groupId>
+          <artifactId>java-jwt</artifactId>
+          <version>3.18.2</version>
+      </dependency>
+
+      <dependency>
+          <groupId>io.jsonwebtoken</groupId>
+          <artifactId>jjwt-api</artifactId>
+          <version>0.12.6</version>
+      </dependency>
+      <dependency>
+          <groupId>io.jsonwebtoken</groupId>
+          <artifactId>jjwt-impl</artifactId>
+          <version>0.12.6</version>
+          <scope>runtime</scope>
+      </dependency>
+      <dependency>
+          <groupId>io.jsonwebtoken</groupId>
+          <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if you prefer Gson -->
+          <version>0.12.6</version>
+          <scope>runtime</scope>
+      </dependency>
+      <dependency>
+          <groupId>io.jsonwebtoken</groupId>
+          <artifactId>jjwt</artifactId>
+          <version>0.12.6</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-root -->
+      <dependency>
+          <groupId>io.jsonwebtoken</groupId>
+          <artifactId>jjwt-root</artifactId>
+          <version>0.12.6</version>
+          <type>pom</type>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-orgjson -->
+      <dependency>
+          <groupId>io.jsonwebtoken</groupId>
+          <artifactId>jjwt-orgjson</artifactId>
+          <version>0.12.6</version>
+          <scope>runtime</scope>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-gson -->
+      <dependency>
+          <groupId>io.jsonwebtoken</groupId>
+          <artifactId>jjwt-gson</artifactId>
+          <version>0.12.6</version>
+      </dependency>
+      <dependency>
       <groupId>eu.hansolo</groupId>
       <artifactId>tilesfx</artifactId>
       <version>21.0.3</version>
@@ -100,6 +154,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
+        <version>2.0.13</version>
     </dependency>
 
       <!-- MongoDB Java Driver -->
