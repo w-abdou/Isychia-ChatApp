@@ -397,6 +397,22 @@ public class ChatInterface {
             // Add to history
             chatHistories.get(currentChatUser).getChildren().add(messageBox);
 
+            // Instantiate the Message object with the required parameters
+            try {
+                String senderID = "yourSenderID"; // Replace with the actual sender ID
+                String receiverID = currentChatUser; // Replace with the actual receiver ID (current user or chat)
+                String content = message; // The message content
+
+                // Assuming sender and receiver names are just IDs for now, you can adjust them accordingly
+                Message newMessage = new Message("senderName", "receiverName", content, senderID, receiverID);
+
+                // Optionally, save it to the database (if needed)
+                newMessage.encryptAndSendMessage(content);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             // Add mock reply after some messages
             if (chatHistories.get(currentChatUser).getChildren().size() % 3 == 0) {
                 addMockReply("This is a response from " + currentChatUser);
@@ -407,7 +423,6 @@ public class ChatInterface {
             messageInput.clear();
         }
     }
-
     private void addMockReply(String replyText) {
         // Create message bubble for reply
         HBox messageBox = new HBox(10);

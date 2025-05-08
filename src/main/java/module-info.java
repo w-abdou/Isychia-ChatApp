@@ -21,7 +21,7 @@ module com.isychia.isychiachatapp {
     requires org.mongodb.driver.sync.client;
     requires org.mongodb.bson;
     requires org.mongodb.driver.core;
-
+    requires jjwt.api;
 
 
     opens com.isychia.isychiachatapp to javafx.fxml;

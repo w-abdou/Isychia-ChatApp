@@ -28,7 +28,7 @@ public class JWTAuthentication {
     // Validate JWT Token
     public static boolean validateJWTToken(String token) {
         try {
-            Jws<Claims> claimsJws = Jwts.parserBuilder()
+            Jws<Claims> claimsJws = Jwts.parser()
                     .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token);
