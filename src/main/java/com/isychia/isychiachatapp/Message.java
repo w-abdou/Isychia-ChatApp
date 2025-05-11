@@ -126,7 +126,7 @@ public class Message {
     }
 
     // Decrypt received message
-    public String decryptReceivedMessage() throws Exception {
+    public String decryptReceivedMessage( String encryptedContent, String iv) throws Exception {
         if (encryptedContent == null || encryptedContent.trim().isEmpty()) {
             throw new IllegalArgumentException("No encrypted message found.");
         }

@@ -30,7 +30,6 @@ public class JWTAuthentication {
         try {
             Jws<Claims> claimsJws = Jwts.parser()
                     .setSigningKey(secretKey)
-                    .build()
                     .parseClaimsJws(token);
 
             Date expiration = claimsJws.getBody().getExpiration();

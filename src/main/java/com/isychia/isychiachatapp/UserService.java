@@ -45,22 +45,29 @@ public class UserService {
         return currentUser;
     }
 
-    // Register method
-    public boolean registerUser(String username, String email, String password) {
-        MongoCollection<Document> usersCollection = database.getCollection("users");
 
-        Document existingUser = usersCollection.find(eq("email", email)).first();
+    // Register method (fixed)
+    public boolean registerUser(String username, String email, String password) {
+        // Check if username OR email already exists
+        Document existingUser = userCollection.find(
+                or(
+                        eq("username", username),
+                        eq("email", email)
+                )
+        ).first();
+
         if (existingUser != null) {
-            return false; // Email already in use
+            return false; // Username or email already in use
         }
 
         Document newUser = new Document("username", username)
                 .append("email", email)
                 .append("password", password); // In production, hash this password!
 
-        usersCollection.insertOne(newUser);
+        userCollection.insertOne(newUser); // Use the initialized collection directly
         return true;
     }
+
 
     // Get all users as User objects
     public List<User> getAllUsers() {
