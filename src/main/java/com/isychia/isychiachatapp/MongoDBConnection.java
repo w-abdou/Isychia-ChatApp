@@ -11,8 +11,8 @@ public class MongoDBConnection {
     private MongoDatabase database;
 
     public MongoDBConnection() {
-        MongoClient mongoClient = MongoClients.create("mongodb+srv://faridasoliman:<db_password>@isychia.bbrqq0g.mongodb.net/?retryWrites=true&w=majority&appName=Isychia"); // Update with your MongoDB URI
-        database = mongoClient.getDatabase("IsychiaChatApp"); // Update with your database name
+        MongoClient mongoClient = MongoClients.create("mongodb+srv://faridasoliman:farida123@isychia.bbrqq0g.mongodb.net/?retryWrites=true&w=majority&appName=Isychia"); // Update with your MongoDB URI
+        database = mongoClient.getDatabase("IsychiaDB"); // Update with your database name
     }
 
     public static MongoDBConnection getInstance() {
