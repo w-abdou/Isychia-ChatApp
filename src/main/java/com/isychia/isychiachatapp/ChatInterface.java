@@ -16,6 +16,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.function.Function;
 import java.util.Arrays;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.HashSet;
 
 import com.mongodb.client.FindIterable;
 
@@ -36,11 +40,15 @@ public class ChatInterface {
     private ScrollPane scrollPane;
     private TextField messageInput;
     private VBox chatWindow, welcomePanel;
-    private HashMap<String, VBox> chatHistories;
     private String currentChatUser;
     private User currentUser;
     private UserService userService;
     private Runnable onOpenProfileAction;
+    private Thread messagePollingThread;
+    private boolean pollingActive = false;
+    private Set<String> displayedMessageIds = new HashSet<>();
+    private final Map<String, VBox> chatHistories = new HashMap<>();
+
 
 
     // Callback
@@ -76,8 +84,6 @@ public class ChatInterface {
     }
 
     private void initializeChatData() {
-        // Initialize chat histories from all users
-        chatHistories = new HashMap<>();
 
         // Get all registered users
         List<User> userList = userService.getAllUsers();
@@ -355,34 +361,42 @@ public class ChatInterface {
 
         // Replace the chat window with the welcome panel in the center area
         mainLayout.setCenter(welcomePanel);
+
+        stopMessagePolling(); // 👈 Stop polling when chat is closed
+
     }
 
     private VBox createNewChatHistory() {
-        VBox chatHistory = new VBox(10);
-        chatHistory.setPadding(new Insets(10));
-        return chatHistory;
+        VBox history = new VBox(10);
+        history.setPadding(new Insets(10));
+        return history;
     }
+
 
     private void updateChatHistory() {
         if (currentChatUser != null) {
-            // Update the chat header with the current user's name
+            // Update chat header
             HBox chatHeader = (HBox) chatWindow.getChildren().get(0);
             Label nameLabel = (Label) chatHeader.getChildren().get(0);
             nameLabel.setText(currentChatUser);
 
-            // Fetch the latest messages for this chat from the database
-            loadMessagesFromDatabase(currentChatUser);
+            // Load messages from DB if not already loaded
+            if (!chatHistories.containsKey(currentChatUser)) {
+                loadMessagesFromDatabase(currentChatUser);
+            }
 
-            // Clear messagesContainer and reload the history from chatHistories
+            // Clear the message container and load ONLY this user's messages
             messagesContainer.getChildren().clear();
             if (chatHistories.containsKey(currentChatUser)) {
                 messagesContainer.getChildren().addAll(chatHistories.get(currentChatUser).getChildren());
             }
 
-            // Scroll to the bottom of the chat
-            scrollPane.setVvalue(1.0);
+            scrollPane.setVvalue(1.0); // scroll to bottom
+            startMessagePolling();
         }
     }
+
+
 
 
     private void loadMessagesFromDatabase(String chatPartnerID) {
@@ -390,33 +404,35 @@ public class ChatInterface {
             MongoDBConnection dbConnection = new MongoDBConnection();
             MongoCollection<Document> messagesCollection = dbConnection.getDatabase().getCollection("messages");
 
-            // Get the current logged-in user's username
             String currentUserID = currentUser.getUsername();
 
-            // Fetch messages where sender = current user and receiver = chat partner, or vice versa
             Document query = new Document("$or", Arrays.asList(
                     new Document("sender", currentUserID).append("receiver", chatPartnerID),
                     new Document("sender", chatPartnerID).append("receiver", currentUserID)
             ));
 
-            // Find and sort messages by timestamp (ascending order)
             FindIterable<Document> results = messagesCollection.find(query).sort(new Document("timestamp", 1));
 
-            // Prepare a new chat history container
-            VBox chatHistory = createNewChatHistory();
+            // Create new container if it doesn't exist
+            chatHistories.putIfAbsent(chatPartnerID, createNewChatHistory());
+            VBox chatHistory = chatHistories.get(chatPartnerID);
 
-            // Process each document and add the decrypted message to the chat history
             for (Document doc : results) {
+                String messageId = doc.getObjectId("_id").toHexString(); // Unique message ID
+                if (displayedMessageIds.contains(messageId)) {
+                    continue; // Already displayed
+                }
+
+                // Decrypt the message
                 String sender = doc.getString("sender");
                 String receiver = doc.getString("receiver");
                 String encryptedContent = doc.getString("message");
                 String iv = doc.getString("iv");
 
-                // Decrypt the message
                 Message message = new Message(sender, receiver, encryptedContent, iv, null);
-                String decryptedMessage = message.decryptReceivedMessage(encryptedContent, iv);
+                String decryptedMessage = message.decryptReceivedMessage();
 
-                // Create a message bubble
+                // Create message bubble
                 HBox messageBox = new HBox();
                 messageBox.setPadding(new Insets(5, 0, 5, 0));
 
@@ -427,7 +443,6 @@ public class ChatInterface {
                 Label messageText = new Label(decryptedMessage);
                 messageText.setWrapText(true);
 
-                // Add timestamp label
                 Date timestamp = doc.getDate("timestamp");
                 String formattedTime = new SimpleDateFormat("HH:mm").format(timestamp);
                 Label timeLabel = new Label(formattedTime);
@@ -435,14 +450,11 @@ public class ChatInterface {
 
                 messageBubble.getChildren().addAll(messageText, timeLabel);
 
-                // Determine message alignment (left for incoming, right for outgoing)
                 if (sender.equals(currentUserID)) {
-                    // Outgoing message
                     messageBox.setAlignment(Pos.CENTER_RIGHT);
                     messageBubble.setStyle(messageBubble.getStyle() + "-fx-background-color: #7289DA;");
                     messageText.setStyle("-fx-text-fill: white;");
                 } else {
-                    // Incoming message
                     messageBox.setAlignment(Pos.CENTER_LEFT);
                     messageBubble.setStyle(messageBubble.getStyle() + "-fx-background-color: #40444B;");
                     messageText.setStyle("-fx-text-fill: white;");
@@ -450,10 +462,15 @@ public class ChatInterface {
 
                 messageBox.getChildren().add(messageBubble);
                 chatHistory.getChildren().add(messageBox);
-            }
 
-            // Store the loaded messages in chatHistories for the current user
-            chatHistories.put(chatPartnerID, chatHistory);
+                // If this is the active chat, also add to messagesContainer
+                if (chatPartnerID.equals(currentChatUser)) {
+                    javafx.application.Platform.runLater(() -> messagesContainer.getChildren().add(messageBox));
+                }
+
+                // Mark as displayed
+                displayedMessageIds.add(messageId);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -463,12 +480,12 @@ public class ChatInterface {
 
 
 
-
-
     private void sendMessage() {
         String message = messageInput.getText().trim();
         if (!message.isEmpty() && currentChatUser != null) {
-            // Create message bubble
+            String currentUserID = currentUser.getUsername();
+
+            // Create message UI
             HBox messageBox = new HBox();
             messageBox.setAlignment(Pos.CENTER_RIGHT);
             messageBox.setPadding(new Insets(5, 0, 5, 0));
@@ -488,32 +505,28 @@ public class ChatInterface {
             messageBubble.getChildren().addAll(messageText, timeLabel);
             messageBox.getChildren().add(messageBubble);
 
-            // Add to the chat history
-            chatHistories.get(currentChatUser).getChildren().add(messageBox);
+            // Make sure this user's chat history exists
+            chatHistories.putIfAbsent(currentChatUser, createNewChatHistory());
+            VBox currentHistory = chatHistories.get(currentChatUser);
 
-            // Directly append the new message to the messagesContainer
+            // Add to both the chat history map and visible container
+            currentHistory.getChildren().add(messageBox);
             messagesContainer.getChildren().add(messageBox);
 
-            // Optionally save to the database (if needed)
+            scrollPane.setVvalue(1.0); // scroll to bottom
+
             try {
-                Message newMessage = new Message("senderName", "receiverName", message, "senderID", currentChatUser);
+                Message newMessage = new Message(currentUserID, currentChatUser, message, null, null);
                 newMessage.encryptAndSendMessage(message);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            // Add a mock reply after every 3 messages
-            if (chatHistories.get(currentChatUser).getChildren().size() % 3 == 0) {
-                addMockReply("This is a response from " + currentChatUser);
-            }
-
-            // Scroll to the most recent message
-            scrollPane.setVvalue(1.0);
-
-            // Clear the input field
             messageInput.clear();
         }
     }
+
+
     private void addMockReply(String replyText) {
         // Create message bubble for the reply
         HBox messageBox = new HBox(10);
@@ -562,4 +575,42 @@ public class ChatInterface {
         this.onLogoutAction = action;
     }
 
+
+
+    private void startMessagePolling() {
+        stopMessagePolling(); // Stop any existing thread
+
+        pollingActive = true;
+        messagePollingThread = new Thread(() -> {
+            while (pollingActive) {
+                try {
+                    Thread.sleep(2000); // Poll every 2 seconds
+
+                    if (currentChatUser != null) {
+                        // Load only new messages from DB and update UI
+                        loadMessagesFromDatabase(currentChatUser);
+
+                        javafx.application.Platform.runLater(() -> {
+                            // ONLY scroll, no need to clear and reload
+                            scrollPane.setVvalue(1.0);
+                        });
+                    }
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+
+        messagePollingThread.setDaemon(true);
+        messagePollingThread.start();
+    }
+
+
+private void stopMessagePolling() {
+    pollingActive = false;
+    if (messagePollingThread != null && messagePollingThread.isAlive()) {
+        messagePollingThread.interrupt();
+    }
+}
 }
