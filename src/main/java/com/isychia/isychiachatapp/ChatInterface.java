@@ -110,6 +110,8 @@ public class ChatInterface {
         HBox header = createHeader();
         mainLayout.setTop(header);
 
+
+
         // Chat List (Left Panel)
         chatList = new ListView<>();
         List<User> userList = userService.getAllUsers(); // ✅ get the list

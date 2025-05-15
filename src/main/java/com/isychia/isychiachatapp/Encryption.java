@@ -19,6 +19,7 @@ public class Encryption {
         return keyPairGen.generateKeyPair();
     }
 
+
     // AES Encryption
     public static String encryptMessageAES(String plainText, SecretKey key, byte[] iv) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");

@@ -25,6 +25,7 @@ public class JWTAuthentication {
                 .compact();
     }
 
+
     // Validate JWT Token
     public static boolean validateJWTToken(String token) {
         try {

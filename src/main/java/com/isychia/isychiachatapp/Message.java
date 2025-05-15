@@ -29,6 +29,8 @@ public class Message {
     private static final String AES_ALGORITHM = "AES/CBC/PKCS5Padding";
     private static SecretKey secretKey;
 
+
+
     // Normal Constructor for sending messages
     public Message(String sender, String receiver, String content, String senderID, String receiverID) throws Exception {
         this.messageID = UUID.randomUUID().toString();

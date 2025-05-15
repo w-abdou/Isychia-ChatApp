@@ -15,6 +15,7 @@ public class Main extends Application {
         this.primaryStage = primaryStage;
         primaryStage.setTitle("IsychiaChat");
 
+
         // Initialize services
         userService = new UserService();
         // Initialize UI components

@@ -54,6 +54,7 @@ public class MongoDBConnection {
         return messages;
     }
 
+
     // ✅ Optional: Mark message as read
     public void markMessageAsRead(String messageID) {
         MongoCollection<Document> collection = database.getCollection("messages");
