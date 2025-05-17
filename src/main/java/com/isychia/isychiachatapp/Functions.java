@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+
 public class Functions implements AllFunctions {
     private final List<ChatUpdateListener> clients = new CopyOnWriteArrayList<>();
 

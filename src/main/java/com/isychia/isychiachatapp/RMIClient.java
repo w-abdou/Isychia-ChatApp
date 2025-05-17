@@ -3,6 +3,7 @@ package com.isychia.isychiachatapp;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+
 public class RMIClient {
     private static AllFunctions stub;
 

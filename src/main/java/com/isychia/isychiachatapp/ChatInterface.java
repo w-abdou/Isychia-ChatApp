@@ -173,6 +173,7 @@ public class ChatInterface {
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setStyle("-fx-background-color: #36393F; -fx-background: #36393F; -fx-border-width: 0;");
 
+
         // Message input area
         HBox inputArea = createMessageInputArea();
 
