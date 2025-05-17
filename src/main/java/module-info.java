@@ -6,6 +6,8 @@ module com.isychia.isychiachatapp {
     requires java.sql;
     requires java.desktop;
 
+    requires java.rmi;
+
 
 
 

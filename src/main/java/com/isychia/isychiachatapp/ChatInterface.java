@@ -487,7 +487,6 @@ public class ChatInterface {
         if (!message.isEmpty() && currentChatUser != null) {
             String currentUserID = currentUser.getUsername();
 
-            // Create message UI
             HBox messageBox = new HBox();
             messageBox.setAlignment(Pos.CENTER_RIGHT);
             messageBox.setPadding(new Insets(5, 0, 5, 0));
@@ -507,19 +506,19 @@ public class ChatInterface {
             messageBubble.getChildren().addAll(messageText, timeLabel);
             messageBox.getChildren().add(messageBubble);
 
-            // Make sure this user's chat history exists
-            chatHistories.putIfAbsent(currentChatUser, createNewChatHistory());
-            VBox currentHistory = chatHistories.get(currentChatUser);
-
-            // Add to both the chat history map and visible container
-            currentHistory.getChildren().add(messageBox);
             messagesContainer.getChildren().add(messageBox);
-
-            scrollPane.setVvalue(1.0); // scroll to bottom
+            scrollPane.setVvalue(1.0);
 
             try {
                 Message newMessage = new Message(currentUserID, currentChatUser, message, null, null);
                 newMessage.encryptAndSendMessage(message);
+
+                // Notify other clients using RMI
+                AllFunctions stub = RMIClient.connect();
+                if (stub != null) {
+                    stub.notifyClients(currentUserID, currentChatUser);
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -527,6 +526,7 @@ public class ChatInterface {
             messageInput.clear();
         }
     }
+
 
 
     private void addMockReply(String replyText) {
@@ -615,4 +615,28 @@ private void stopMessagePolling() {
         messagePollingThread.interrupt();
     }
 }
+    public void registerForRMINotifications() {
+        try {
+            AllFunctions stub = RMIClient.connect();
+            if (stub != null) {
+                ChatUpdateListenerImpl listener = new ChatUpdateListenerImpl(this);
+                stub.registerClient(listener);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public void handleNewMessageNotification(String sender, String receiver) {
+        javafx.application.Platform.runLater(() -> {
+            if (receiver.equals(currentUser.getUsername()) || sender.equals(currentChatUser)) {
+                loadMessagesFromDatabase(currentChatUser);
+                messagesContainer.getChildren().clear();
+                if (chatHistories.containsKey(currentChatUser)) {
+                    messagesContainer.getChildren().addAll(chatHistories.get(currentChatUser).getChildren());
+                }
+            }
+        });
+    }
+
+
 }
