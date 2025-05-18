@@ -10,14 +10,18 @@ public class Functions implements AllFunctions {
 
     @Override
     public String getId(String name) throws RemoteException {
-        return name + "_id";
+        return name + "_id"; // example logic
     }
+
 
     @Override
     public void registerListener(String username, ChatUpdateListener listener) throws RemoteException {
         listeners.put(username, listener);
         System.out.println("✅ RMI Listener registered for user: " + username);
+
+
     }
+
 
 
     @Override
