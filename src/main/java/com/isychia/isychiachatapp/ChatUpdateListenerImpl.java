@@ -12,10 +12,13 @@ public class ChatUpdateListenerImpl extends UnicastRemoteObject implements ChatU
         this.chatInterface = chatInterface;
     }
 
+
     @Override
     public void onNewMessage(String senderUsername, String messageText) throws RemoteException {
         Platform.runLater(() -> {
             chatInterface.handleIncomingMessageNotification(senderUsername, messageText);
         });
+
+
     }
 }
