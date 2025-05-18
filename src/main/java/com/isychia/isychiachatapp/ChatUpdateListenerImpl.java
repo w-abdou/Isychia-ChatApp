@@ -1,22 +1,21 @@
 package com.isychia.isychiachatapp;
-import com.isychia.isychiachatapp.ChatInterface;
-
-
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import javafx.application.Platform;
 
 public class ChatUpdateListenerImpl extends UnicastRemoteObject implements ChatUpdateListener {
 
     private final ChatInterface chatInterface;
 
-    protected ChatUpdateListenerImpl(ChatInterface chatInterface) throws RemoteException {
-        super();
+    public ChatUpdateListenerImpl(ChatInterface chatInterface) throws RemoteException {
         this.chatInterface = chatInterface;
     }
 
     @Override
-    public void onNewMessage(String sender, String receiver) throws RemoteException {
-        chatInterface.handleNewMessageNotification(sender, receiver);
+    public void onNewMessage(String senderUsername, String messageText) throws RemoteException {
+        Platform.runLater(() -> {
+            chatInterface.handleIncomingMessageNotification(senderUsername, messageText);
+        });
     }
 }

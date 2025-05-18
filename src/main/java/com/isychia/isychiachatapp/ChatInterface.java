@@ -1,5 +1,8 @@
 package com.isychia.isychiachatapp;
 
+import javafx.application.Platform;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -20,7 +23,6 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.HashSet;
-
 import com.mongodb.client.FindIterable;
 
 import java.text.SimpleDateFormat;
@@ -48,6 +50,7 @@ public class ChatInterface {
     private boolean pollingActive = false;
     private Set<String> displayedMessageIds = new HashSet<>();
     private final Map<String, VBox> chatHistories = new HashMap<>();
+    private AllFunctions rmiStub;
 
 
 
@@ -67,6 +70,8 @@ public class ChatInterface {
     public ChatInterface(UserService userService) {
         this.userService = userService;
         createChatScene();
+        connectToRMIServer();
+
     }
 
     public void initialize(User user) {
@@ -514,10 +519,9 @@ public class ChatInterface {
                 Message newMessage = new Message(currentUserID, currentChatUser, message, null, null);
                 newMessage.encryptAndSendMessage(message);
 
-                // Notify other clients using RMI
-                AllFunctions stub = RMIClient.connect();
-                if (stub != null) {
-                    stub.notifyClients(currentUserID, currentChatUser);
+                if (rmiStub != null) {
+                    rmiStub.notifyNewMessage(currentChatUser, currentUser.getUsername(), message);
+
                 }
 
             } catch (Exception e) {
@@ -527,6 +531,8 @@ public class ChatInterface {
             messageInput.clear();
         }
     }
+
+
 
 
 
@@ -621,22 +627,54 @@ private void stopMessagePolling() {
             AllFunctions stub = RMIClient.connect();
             if (stub != null) {
                 ChatUpdateListenerImpl listener = new ChatUpdateListenerImpl(this);
-                stub.registerClient(listener);
+                stub.registerListener(currentUser.getUsername(), listener);
+
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    public void handleNewMessageNotification(String sender, String receiver) {
-        javafx.application.Platform.runLater(() -> {
-            if (receiver.equals(currentUser.getUsername()) || sender.equals(currentChatUser)) {
-                loadMessagesFromDatabase(currentChatUser);
-                messagesContainer.getChildren().clear();
-                if (chatHistories.containsKey(currentChatUser)) {
-                    messagesContainer.getChildren().addAll(chatHistories.get(currentChatUser).getChildren());
-                }
-            }
-        });
+    private void connectToRMIServer() {
+        try {
+            Registry registry = LocateRegistry.getRegistry("localhost", 1234); // match your server settings
+            AllFunctions stub = (AllFunctions) registry.lookup("ChatService");
+
+            ChatUpdateListener listener = new ChatUpdateListenerImpl(this);
+            stub.registerListener(currentUser.getUsername(), listener);
+
+            // Save the stub to use it when sending messages
+            this.rmiStub = stub;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void handleIncomingMessageNotification(String senderUsername, String messageText) {
+        if (senderUsername.equals(currentChatUser)) {
+            HBox messageBox = new HBox();
+            messageBox.setAlignment(Pos.CENTER_LEFT);
+            messageBox.setPadding(new Insets(5, 0, 5, 0));
+
+            VBox messageBubble = new VBox(3);
+            messageBubble.setStyle("-fx-background-color: #e0e0e0; -fx-background-radius: 18; -fx-padding: 10 15 10 15;");
+            messageBubble.setMaxWidth(400);
+
+            Label messageLabel = new Label(messageText);
+            messageLabel.setWrapText(true);
+            messageLabel.setStyle("-fx-text-fill: black;");
+
+            String timestamp = new SimpleDateFormat("HH:mm").format(new Date());
+            Label timeLabel = new Label(timestamp);
+            timeLabel.setStyle("-fx-text-fill: rgba(0, 0, 0, 0.5); -fx-font-size: 10px;");
+
+            messageBubble.getChildren().addAll(messageLabel, timeLabel);
+            messageBox.getChildren().add(messageBubble);
+
+            messagesContainer.getChildren().add(messageBox);
+            scrollPane.setVvalue(1.0);
+        }
     }
 
 
