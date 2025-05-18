@@ -100,7 +100,6 @@ public class ChatInterface {
     }
 
     private void initializeChatData() {
-
         // Get all registered users
         List<User> userList = userService.getAllUsers();
 
@@ -112,8 +111,8 @@ public class ChatInterface {
                 VBox chatHistory = createNewChatHistory();
                 chatHistories.put(chatPartnerID, chatHistory);
 
-                // Pre-load messages from the database
-                loadMessagesFromDatabase(chatPartnerID);
+                // Load messages from the database
+                loadMessagesFromDatabase(chatPartnerID); // This loads chat history for each contact
             }
         }
 
@@ -503,42 +502,73 @@ public class ChatInterface {
         if (!message.isEmpty() && currentChatUser != null) {
             String currentUserID = currentUser.getUsername();
 
-            HBox messageBox = new HBox();
-            messageBox.setAlignment(Pos.CENTER_RIGHT);
-            messageBox.setPadding(new Insets(5, 0, 5, 0));
-
-            VBox messageBubble = new VBox(3);
-            messageBubble.setStyle("-fx-background-color: #7289DA; -fx-background-radius: 18; -fx-padding: 10 15 10 15;");
-            messageBubble.setMaxWidth(400);
-
-            Label messageText = new Label(message);
-            messageText.setWrapText(true);
-            messageText.setStyle("-fx-text-fill: white;");
-
-            String timestamp = new SimpleDateFormat("HH:mm").format(new Date());
-            Label timeLabel = new Label(timestamp);
-            timeLabel.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 10px;");
-
-            messageBubble.getChildren().addAll(messageText, timeLabel);
-            messageBox.getChildren().add(messageBubble);
-
-            messagesContainer.getChildren().add(messageBox);
-            scrollPane.setVvalue(1.0);
-
             try {
+                // Create and encrypt the message
                 Message newMessage = new Message(currentUserID, currentChatUser, message, null, null);
-                newMessage.encryptAndSendMessage(message);
+                String encryptedMessage = newMessage.encryptAndSendMessage(message);
+                String iv = newMessage.getIv();
 
+                // Create document for MongoDB
+                MongoDBConnection dbConnection = new MongoDBConnection();
+                Document messageDoc = new Document()
+                        .append("sender", currentUserID)
+                        .append("receiver", currentChatUser)
+                        .append("message", encryptedMessage)
+                        .append("iv", iv)
+                        .append("timestamp", new Date());
+
+                // Save to MongoDB
+                dbConnection.getDatabase()
+                        .getCollection("messages")
+                        .insertOne(messageDoc);
+
+                // Create message bubble for UI
+                HBox messageBox = new HBox();
+                messageBox.setAlignment(Pos.CENTER_RIGHT);
+                messageBox.setPadding(new Insets(5, 0, 5, 0));
+
+                VBox messageBubble = new VBox(3);
+                messageBubble.setStyle("-fx-background-color: #7289DA; -fx-background-radius: 18; -fx-padding: 10 15 10 15;");
+                messageBubble.setMaxWidth(400);
+
+                Label messageText = new Label(message);
+                messageText.setWrapText(true);
+                messageText.setStyle("-fx-text-fill: white;");
+
+                String timestamp = new SimpleDateFormat("HH:mm").format(new Date());
+                Label timeLabel = new Label(timestamp);
+                timeLabel.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 10px;");
+
+                messageBubble.getChildren().addAll(messageText, timeLabel);
+                messageBox.getChildren().add(messageBubble);
+
+                // Add to chat history
+                if (!chatHistories.containsKey(currentChatUser)) {
+                    chatHistories.put(currentChatUser, createNewChatHistory());
+                }
+                chatHistories.get(currentChatUser).getChildren().add(messageBox);
+
+                // Update UI
+                messagesContainer.getChildren().add(messageBox);
+                scrollPane.setVvalue(1.0);
+
+                // Notify other clients through RMI
                 if (rmiStub != null) {
                     rmiStub.notifyNewMessage(currentChatUser, currentUser.getUsername(), message);
-
                 }
+
+                // Clear input field
+                messageInput.clear();
 
             } catch (Exception e) {
                 e.printStackTrace();
+                // Optionally show error message to user
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Failed to send message");
+                alert.setContentText("There was an error sending your message. Please try again.");
+                alert.showAndWait();
             }
-
-            messageInput.clear();
         }
     }
 
@@ -584,6 +614,17 @@ public class ChatInterface {
 
     private void showChatWindow() {
         mainLayout.setCenter(chatWindow);
+
+        // Update chat header
+        HBox chatHeader = (HBox) chatWindow.getChildren().get(0);
+        Label nameLabel = (Label) chatHeader.getChildren().get(0);
+        nameLabel.setText(currentChatUser);
+
+        // Update the chat history
+        updateChatHistory();
+
+        // Set focus to message input
+        messageInput.requestFocus();
     }
 
     public Scene getScene() {
@@ -593,9 +634,6 @@ public class ChatInterface {
     public void setOnLogoutAction(Runnable action) {
         this.onLogoutAction = action;
     }
-
-
-
 
 
 
@@ -626,36 +664,65 @@ public class ChatInterface {
 
     public void handleIncomingMessageNotification(String senderUsername, String messageText) {
         Platform.runLater(() -> {
-            // Create message box
-            HBox messageBox = new HBox();
-            messageBox.setAlignment(Pos.CENTER_LEFT);
-            messageBox.setPadding(new Insets(5, 0, 5, 0));
+            try {
+                // Create and encrypt message for storage
+                Message newMessage = new Message(senderUsername, currentUser.getUsername(), messageText, null, null);
+                String encryptedMessage = newMessage.encryptAndSendMessage(messageText);
+                String iv = newMessage.getIv();
 
-            VBox messageBubble = new VBox(3);
-            messageBubble.setStyle("-fx-background-color: #40444B; -fx-background-radius: 18; -fx-padding: 10 15 10 15;");
-            messageBubble.setMaxWidth(400);
+                // Save to MongoDB
+                MongoDBConnection dbConnection = new MongoDBConnection();
+                Document messageDoc = new Document()
+                        .append("sender", senderUsername)
+                        .append("receiver", currentUser.getUsername())
+                        .append("message", encryptedMessage)
+                        .append("iv", iv)
+                        .append("timestamp", new Date());
 
-            Label messageLabel = new Label(messageText);
-            messageLabel.setWrapText(true);
-            messageLabel.setStyle("-fx-text-fill: white;");
+                dbConnection.getDatabase()
+                        .getCollection("messages")
+                        .insertOne(messageDoc);
 
-            String timestamp = new SimpleDateFormat("HH:mm").format(new Date());
-            Label timeLabel = new Label(timestamp);
-            timeLabel.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 10px;");
+                // Create message box
+                HBox messageBox = new HBox();
+                messageBox.setAlignment(Pos.CENTER_LEFT);
+                messageBox.setPadding(new Insets(5, 0, 5, 0));
 
-            messageBubble.getChildren().addAll(messageLabel, timeLabel);
-            messageBox.getChildren().add(messageBubble);
+                VBox messageBubble = new VBox(3);
+                messageBubble.setStyle("-fx-background-color: #40444B; -fx-background-radius: 18; -fx-padding: 10 15 10 15;");
+                messageBubble.setMaxWidth(400);
 
-            // Add to chat history
-            if (!chatHistories.containsKey(senderUsername)) {
-                chatHistories.put(senderUsername, createNewChatHistory());
-            }
-            chatHistories.get(senderUsername).getChildren().add(messageBox);
+                Label messageLabel = new Label(messageText);
+                messageLabel.setWrapText(true);
+                messageLabel.setStyle("-fx-text-fill: white;");
 
-            // If this is the current chat, update the display
-            if (senderUsername.equals(currentChatUser)) {
-                messagesContainer.getChildren().add(messageBox);
-                scrollPane.setVvalue(1.0);
+                String timestamp = new SimpleDateFormat("HH:mm").format(new Date());
+                Label timeLabel = new Label(timestamp);
+                timeLabel.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 10px;");
+
+                messageBubble.getChildren().addAll(messageLabel, timeLabel);
+                messageBox.getChildren().add(messageBubble);
+
+                // Add to chat history
+                if (!chatHistories.containsKey(senderUsername)) {
+                    chatHistories.put(senderUsername, createNewChatHistory());
+                }
+                chatHistories.get(senderUsername).getChildren().add(messageBox);
+
+                // If this is the current chat, update the display
+                if (senderUsername.equals(currentChatUser)) {
+                    messagesContainer.getChildren().add(messageBox);
+                    scrollPane.setVvalue(1.0);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Optionally show error message to user
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText("Failed to process received message");
+                alert.setContentText("There was an error processing the received message.");
+                alert.showAndWait();
             }
         });
     }
