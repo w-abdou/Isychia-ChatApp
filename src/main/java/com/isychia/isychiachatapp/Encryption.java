@@ -12,7 +12,7 @@ import java.util.Base64;
 
 
 public class Encryption {
-    // Generate an RSA key pair
+    // generate an RSA key pair
     public static KeyPair generateRSAKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
         keyPairGen.initialize(2048);
@@ -20,7 +20,7 @@ public class Encryption {
     }
 
 
-    // AES Encryption
+    // AES encryption
     public static String encryptMessageAES(String plainText, SecretKey key, byte[] iv) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
@@ -29,7 +29,7 @@ public class Encryption {
         return Base64.getEncoder().encodeToString(encryptedBytes);
     }
 
-    // AES Decryption
+    // AES decryption
     public static String decryptMessageAES(String encryptedText, SecretKey key, byte[] iv) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
@@ -38,7 +38,7 @@ public class Encryption {
         return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
 
-    // Encrypt AES key using RSA
+    // encrypt AES key
     public static String encryptKeyRSA(SecretKey key, PublicKey publicKey) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
@@ -46,7 +46,7 @@ public class Encryption {
         return Base64.getEncoder().encodeToString(encryptedKey);
     }
 
-    // Decrypt AES key using RSA
+    // decrypt AES key
     public static SecretKey decryptKeyRSA(String encryptedKey, PrivateKey privateKey) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
@@ -54,7 +54,7 @@ public class Encryption {
         return new SecretKeySpec(decryptedKeyBytes, "AES");
     }
 
-    // Perform Diffie-Hellman Key Exchange
+    // Diffie-Hellman Key Exchange
     public static SecretKey performDiffieHellmanExchange(PublicKey publicKey, PrivateKey privateKey) throws Exception {
         KeyAgreement keyAgreement = KeyAgreement.getInstance("DH");
         keyAgreement.init(privateKey);
@@ -62,7 +62,7 @@ public class Encryption {
         return new SecretKeySpec(keyAgreement.generateSecret(), "AES");
     }
 
-    // Generate a random AES symmetric key
+    // random AES symmetric key
     public static SecretKey generateSymmetricKey() throws NoSuchAlgorithmException {
         KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         keyGen.init(256);

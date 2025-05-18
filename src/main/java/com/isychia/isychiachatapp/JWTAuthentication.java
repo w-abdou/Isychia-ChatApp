@@ -10,18 +10,18 @@ import java.util.Date;
 import java.security.Key;
 
 public class JWTAuthentication {
-    private static final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256); // Generate a secure secret key
-    private static final long EXPIRATION_TIME = 86400000; // 1 day in milliseconds
+    private static final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private static final long EXPIRATION_TIME = 86400000; // a day in milliseconds
 
-    // Generate JWT Token
+    // generate JWT Token
     public static String generateJWTToken(User user) {
         return Jwts.builder()
-                .setSubject(user.getUsername()) // We'll use username as subject (since you don't have ID field)
+                .setSubject(user.getUsername()) // username as subject
                 .claim("username", user.getUsername())
                 .claim("email", user.getEmail())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) // Expiry date
-                .signWith(secretKey) // Sign the token with secret key
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(secretKey) // sign the token with secret key
                 .compact();
     }
 
@@ -34,9 +34,9 @@ public class JWTAuthentication {
                     .parseClaimsJws(token);
 
             Date expiration = claimsJws.getBody().getExpiration();
-            return expiration.after(new Date()); // Check if token is still valid
+            return expiration.after(new Date()); // if token is still valid
         } catch (JwtException | IllegalArgumentException e) {
-            return false; // Invalid token
+            return false;
         }
     }
 }

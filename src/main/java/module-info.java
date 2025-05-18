@@ -17,7 +17,7 @@ module com.isychia.isychiachatapp {
     requires eu.hansolo.tilesfx;
     requires eu.hansolo.fx.countries;
 
-    // ✅ MongoDB driver modules
+    // MongoDB driver modules
     requires org.mongodb.driver.sync.client;
     requires org.mongodb.bson;
     requires org.mongodb.driver.core;

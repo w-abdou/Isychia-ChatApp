@@ -54,7 +54,7 @@ public class ChatInterface {
 
 
 
-    // Callback
+    // callback
     private Runnable onLogoutAction;
 
 
@@ -78,7 +78,7 @@ public class ChatInterface {
         this.currentUser = user;
         initializeChatData();
 
-        // Register RMI listener for this user
+        // RMI listener for this user
         try {
             if (rmiStub != null) {
                 ChatUpdateListener listener = new ChatUpdateListenerImpl(this);
@@ -100,39 +100,37 @@ public class ChatInterface {
     }
 
     private void initializeChatData() {
-        // Get all registered users
+        // get all registered users
         List<User> userList = userService.getAllUsers();
 
         for (User user : userList) {
             if (!user.getUsername().equals(currentUser.getUsername())) {
                 String chatPartnerID = user.getUsername();
 
-                // Initialize an empty chat history
+                // new empty chat history
                 VBox chatHistory = createNewChatHistory();
                 chatHistories.put(chatPartnerID, chatHistory);
 
-                // Load messages from the database
-                loadMessagesFromDatabase(chatPartnerID); // This loads chat history for each contact
+                // messages from the database
+                loadMessagesFromDatabase(chatPartnerID);
             }
         }
 
-        // Set up the chat UI after loading messages
+        //
         setupChatUI();
     }
 
     private void setupChatUI() {
-        // App header with logo and status
         HBox header = createHeader();
         mainLayout.setTop(header);
 
 
-
-        // Chat List (Left Panel)
+        // chat List <left>
         chatList = new ListView<>();
-        List<User> userList = userService.getAllUsers(); // ✅ get the list
-        Map<String, User> allUsers = new HashMap<>();    // ✅ create the map
+        List<User> userList = userService.getAllUsers();
+        Map<String, User> allUsers = new HashMap<>();
         for (User user : userList) {
-            allUsers.put(user.getUsername(), user);      // ✅ fill the map using username as key
+            allUsers.put(user.getUsername(), user);
         }
 
         for (User user : allUsers.values()) {
@@ -158,7 +156,7 @@ public class ChatInterface {
         chatList.setStyle("-fx-background-color: #2C2F33; -fx-border-color: #23272A; -fx-border-width: 0 1 0 0;");
         chatList.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                // Extract username from HBox
+                // username from HBox
                 Label nameLabel = (Label) ((VBox)newVal.getChildren().get(1)).getChildren().get(0);
                 currentChatUser = nameLabel.getText();
                 showChatWindow();
@@ -166,17 +164,17 @@ public class ChatInterface {
             }
         });
 
-        // Search box for contacts
+        // Search box
         TextField searchField = new TextField();
         searchField.setPromptText("Search contacts...");
         searchField.setStyle("-fx-background-color: #40444B; -fx-text-fill: white; -fx-prompt-text-fill: #72767D;");
         searchField.getStyleClass().add("search-field");
 
-        // Chat Window Panel
+        // chat window
         chatWindow = new VBox(0);
         chatWindow.setStyle("-fx-background-color: #36393F;");
 
-        // Messages area
+        // msg area
         messagesContainer = new VBox(10);
         messagesContainer.setPadding(new Insets(15));
         messagesContainer.setStyle("-fx-background-color: #36393F;");
@@ -189,13 +187,13 @@ public class ChatInterface {
         scrollPane.setStyle("-fx-background-color: #36393F; -fx-background: #36393F; -fx-border-width: 0;");
 
 
-        // Message input area
+        // msg input area
         HBox inputArea = createMessageInputArea();
 
         chatWindow.getChildren().addAll(createChatHeader(), scrollPane, inputArea);
         VBox.setVgrow(scrollPane, Priority.ALWAYS);
 
-        // Welcome Screen
+        // welcome Screen
         welcomePanel = createWelcomePanel();
 
         chatScene.setOnKeyPressed(event -> {
@@ -204,11 +202,11 @@ public class ChatInterface {
             }
         });
 
-        // Left sidebar with search and contacts
+        // left sidebar with search and contacts
         VBox leftPanel = new VBox(10);
         leftPanel.setPadding(new Insets(0, 0, 10, 0));
 
-        // Add logout button
+        // logout btn
         Button logoutButton = new Button("Logout");
         logoutButton.getStyleClass().add("chat-header-button");
         logoutButton.setOnAction(e -> {
@@ -217,7 +215,7 @@ public class ChatInterface {
             }
         });
 
-        // User info panel
+        // user info
         HBox userInfoPanel = new HBox(10);
         userInfoPanel.setPadding(new Insets(10));
         userInfoPanel.setAlignment(Pos.CENTER_LEFT);
@@ -236,16 +234,16 @@ public class ChatInterface {
         VBox.setMargin(searchField, new Insets(10, 10, 5, 10));
         VBox.setVgrow(chatList, Priority.ALWAYS);
 
-        // Set components to the layout
+        // components to the layout
         mainLayout.setLeft(leftPanel);
         mainLayout.setCenter(welcomePanel);
     }
 
     private HBox createContactListItem(String username) {
-        // Avatar (circle with first letter)
+        // avatar (circle with first letter)
         StackPane avatar = createAvatar(username);
 
-        // User info (name and status)
+        // user info (name and status)
         Label nameLabel = new Label(username);
         nameLabel.setStyle("-fx-text-fill: white; -fx-font-weight: bold;");
 
@@ -255,7 +253,7 @@ public class ChatInterface {
 
         VBox userInfo = new VBox(2);
         userInfo.getChildren().addAll(nameLabel, statusLabel);
-        // Contact list item
+        // cantact list
         HBox contactItem = new HBox(10);
         contactItem.setAlignment(Pos.CENTER_LEFT);
         contactItem.setPadding(new Insets(5, 15, 5, 15));
@@ -289,7 +287,7 @@ public class ChatInterface {
         appName.setFont(Font.font("System", FontWeight.BOLD, 18));
         appName.setStyle("-fx-text-fill: white;");
 
-        // Simple logo (circle for now)
+        // logo placeholder (circle for now)
         Circle logo = new Circle(15);
         logo.setFill(Color.rgb(114, 137, 218));
 
@@ -374,13 +372,11 @@ public class ChatInterface {
     }
 
     private void showWelcomePanel() {
-        // Clear the current chat selection if any
+        // clear current chat
         currentChatUser = null;
 
-        // Replace the chat window with the welcome panel in the center area
+        // chat window to welcome panel
         mainLayout.setCenter(welcomePanel);
-
-        // 👈 Stop polling when chat is closed
 
     }
 
@@ -393,17 +389,17 @@ public class ChatInterface {
 
     private void updateChatHistory() {
         if (currentChatUser != null) {
-            // Update chat header
+            // update chat header
             HBox chatHeader = (HBox) chatWindow.getChildren().get(0);
             Label nameLabel = (Label) chatHeader.getChildren().get(0);
             nameLabel.setText(currentChatUser);
 
-            // Load messages from DB if not already loaded
+            // msgs from DB if not already loaded
             if (!chatHistories.containsKey(currentChatUser)) {
                 loadMessagesFromDatabase(currentChatUser);
             }
 
-            // Clear the message container and load ONLY this user's messages
+            // clear the message container and load ONLY this users msgs
             messagesContainer.getChildren().clear();
             if (chatHistories.containsKey(currentChatUser)) {
                 messagesContainer.getChildren().addAll(chatHistories.get(currentChatUser).getChildren());
@@ -435,12 +431,12 @@ public class ChatInterface {
             VBox chatHistory = chatHistories.get(chatPartnerID);
 
             for (Document doc : results) {
-                String messageId = doc.getObjectId("_id").toHexString(); // Unique message ID
+                String messageId = doc.getObjectId("_id").toHexString();
                 if (displayedMessageIds.contains(messageId)) {
-                    continue; // Already displayed
+                    continue;
                 }
 
-                // Decrypt the message
+                // decrypt the message
                 String sender = doc.getString("sender");
                 String receiver = doc.getString("receiver");
                 String encryptedContent = doc.getString("message");
@@ -449,7 +445,7 @@ public class ChatInterface {
                 Message message = new Message(sender, receiver, encryptedContent, iv, null);
                 String decryptedMessage = message.decryptReceivedMessage();
 
-                // Create message bubble
+                // message bubble
                 HBox messageBox = new HBox();
                 messageBox.setPadding(new Insets(5, 0, 5, 0));
 
@@ -480,12 +476,12 @@ public class ChatInterface {
                 messageBox.getChildren().add(messageBubble);
                 chatHistory.getChildren().add(messageBox);
 
-                // If this is the active chat, also add to messagesContainer
+                // if this is the active chat, also add to messagesContainer
                 if (chatPartnerID.equals(currentChatUser)) {
                     javafx.application.Platform.runLater(() -> messagesContainer.getChildren().add(messageBox));
                 }
 
-                // Mark as displayed
+                // mark as displayed
                 displayedMessageIds.add(messageId);
             }
 
@@ -503,12 +499,12 @@ public class ChatInterface {
             String currentUserID = currentUser.getUsername();
 
             try {
-                // Create and encrypt the message
+                // create and encrypt the msg
                 Message newMessage = new Message(currentUserID, currentChatUser, message, null, null);
                 String encryptedMessage = newMessage.encryptAndSendMessage(message);
                 String iv = newMessage.getIv();
 
-                // Create document for MongoDB
+                // create document for mongo
                 MongoDBConnection dbConnection = new MongoDBConnection();
                 Document messageDoc = new Document()
                         .append("sender", currentUserID)
@@ -517,12 +513,12 @@ public class ChatInterface {
                         .append("iv", iv)
                         .append("timestamp", new Date());
 
-                // Save to MongoDB
+                // save to mongo
                 dbConnection.getDatabase()
                         .getCollection("messages")
                         .insertOne(messageDoc);
 
-                // Create message bubble for UI
+                // msg bubble for UI
                 HBox messageBox = new HBox();
                 messageBox.setAlignment(Pos.CENTER_RIGHT);
                 messageBox.setPadding(new Insets(5, 0, 5, 0));
@@ -542,27 +538,26 @@ public class ChatInterface {
                 messageBubble.getChildren().addAll(messageText, timeLabel);
                 messageBox.getChildren().add(messageBubble);
 
-                // Add to chat history
+                // add to chat history
                 if (!chatHistories.containsKey(currentChatUser)) {
                     chatHistories.put(currentChatUser, createNewChatHistory());
                 }
                 chatHistories.get(currentChatUser).getChildren().add(messageBox);
 
-                // Update UI
                 messagesContainer.getChildren().add(messageBox);
                 scrollPane.setVvalue(1.0);
 
-                // Notify other clients through RMI
+                // notify other clients through RMI
                 if (rmiStub != null) {
                     rmiStub.notifyNewMessage(currentChatUser, currentUser.getUsername(), message);
                 }
 
-                // Clear input field
+                // clear
                 messageInput.clear();
 
             } catch (Exception e) {
                 e.printStackTrace();
-                // Optionally show error message to user
+                // error msg to user
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText("Failed to send message");
@@ -577,12 +572,12 @@ public class ChatInterface {
 
 
     private void addMockReply(String replyText) {
-        // Create message bubble for the reply
+        // msg bubble for the reply
         HBox messageBox = new HBox(10);
         messageBox.setAlignment(Pos.CENTER_LEFT);
         messageBox.setPadding(new Insets(5, 0, 5, 0));
 
-        // Add avatar
+        // avatar
         StackPane avatar = createAvatar(currentChatUser);
         avatar.setScaleX(0.7);
         avatar.setScaleY(0.7);
@@ -602,28 +597,27 @@ public class ChatInterface {
         messageBubble.getChildren().addAll(messageText, timeLabel);
         messageBox.getChildren().addAll(avatar, messageBubble);
 
-        // Add to the chat history
+
         chatHistories.get(currentChatUser).getChildren().add(messageBox);
 
-        // Directly append the reply message to the messagesContainer
+
         messagesContainer.getChildren().add(messageBox);
 
-        // Scroll to the most recent message
+
         scrollPane.setVvalue(1.0);
     }
 
     private void showChatWindow() {
         mainLayout.setCenter(chatWindow);
 
-        // Update chat header
         HBox chatHeader = (HBox) chatWindow.getChildren().get(0);
         Label nameLabel = (Label) chatHeader.getChildren().get(0);
         nameLabel.setText(currentChatUser);
 
-        // Update the chat history
+
         updateChatHistory();
 
-        // Set focus to message input
+
         messageInput.requestFocus();
     }
 
@@ -665,12 +659,12 @@ public class ChatInterface {
     public void handleIncomingMessageNotification(String senderUsername, String messageText) {
         Platform.runLater(() -> {
             try {
-                // Create and encrypt message for storage
+                // create and encrypt message for storage
                 Message newMessage = new Message(senderUsername, currentUser.getUsername(), messageText, null, null);
                 String encryptedMessage = newMessage.encryptAndSendMessage(messageText);
                 String iv = newMessage.getIv();
 
-                // Save to MongoDB
+                // save to mongo
                 MongoDBConnection dbConnection = new MongoDBConnection();
                 Document messageDoc = new Document()
                         .append("sender", senderUsername)
@@ -683,7 +677,7 @@ public class ChatInterface {
                         .getCollection("messages")
                         .insertOne(messageDoc);
 
-                // Create message box
+                // create msg box
                 HBox messageBox = new HBox();
                 messageBox.setAlignment(Pos.CENTER_LEFT);
                 messageBox.setPadding(new Insets(5, 0, 5, 0));
@@ -703,13 +697,13 @@ public class ChatInterface {
                 messageBubble.getChildren().addAll(messageLabel, timeLabel);
                 messageBox.getChildren().add(messageBubble);
 
-                // Add to chat history
+
                 if (!chatHistories.containsKey(senderUsername)) {
                     chatHistories.put(senderUsername, createNewChatHistory());
                 }
                 chatHistories.get(senderUsername).getChildren().add(messageBox);
 
-                // If this is the current chat, update the display
+
                 if (senderUsername.equals(currentChatUser)) {
                     messagesContainer.getChildren().add(messageBox);
                     scrollPane.setVvalue(1.0);
@@ -717,7 +711,7 @@ public class ChatInterface {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                // Optionally show error message to user
+              // error to user
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText("Failed to process received message");

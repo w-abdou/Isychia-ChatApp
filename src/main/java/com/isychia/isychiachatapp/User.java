@@ -4,36 +4,36 @@ import org.bson.Document;
 
 public class User {
     private String username;
-    private String email;   // Add email field
+    private String email;
     private String password;
 
-    // Default constructor
+    // def constructor
     public User() {}
 
-    // Constructor with all fields
+    // constructor with all fields
     public User(String username, String email, String password) {
         this.username = username;
         this.email = email;   // Add email to the constructor
         this.password = password;
     }
 
-    // Static method to convert Document to User
+    // convert document to user
     public static User fromDocument(Document doc) {
         return new User(
                 doc.getString("username"),
-                doc.getString("email"),   // Fetch email as well
+                doc.getString("email"),
                 doc.getString("password")
         );
     }
 
-    // Convert User to Document (MongoDB document format)
+    // convert User to mongo document
     public Document toDocument() {
         return new Document("username", username)
-                .append("email", email)    // Add email to the document
+                .append("email", email)
                 .append("password", password);
     }
 
-    // Getters and Setters
+    // getters and setters
     public String getUsername() {
         return username;
     }

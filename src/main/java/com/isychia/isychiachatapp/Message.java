@@ -31,7 +31,7 @@ public class Message {
 
 
 
-    // Normal Constructor for sending messages
+    // constructor for sending messages
     public Message(String sender, String receiver, String content, String senderID, String receiverID) throws Exception {
         this.messageID = UUID.randomUUID().toString();
         this.senderID = senderID;
@@ -45,7 +45,7 @@ public class Message {
         this.encryptedContent = encryptAndSendMessage(content);
     }
 
-    // ✅ Constructor to load from MongoDB Document
+    // constructor to load from mongo
     public Message(Document doc) {
         this.messageID = doc.getString("messageID");
         this.senderID = doc.getString("senderID");
@@ -59,7 +59,7 @@ public class Message {
         this.receiver = doc.getString("receiver");
     }
 
-    // Encrypt content
+    // encrypt content
     public String encryptAndSendMessage(String content) throws Exception {
         if (content == null || content.trim().isEmpty()) {
             throw new IllegalArgumentException("Message content cannot be empty.");
@@ -76,7 +76,7 @@ public class Message {
         return Base64.getEncoder().encodeToString(encryptedData);
     }
 
-    // ✅ Decrypt for display
+    //decrypt for display
     public String decryptReceivedMessage() throws Exception {
         if (encryptedContent == null || encryptedContent.trim().isEmpty()) {
             throw new IllegalArgumentException("No encrypted message found.");
@@ -101,7 +101,7 @@ public class Message {
         return Base64.getEncoder().encodeToString(ivBytes);
     }
 
-    // Convert to MongoDB document
+    // convert to the mongo document
     public Document toDocument() {
         return new Document("messageID", messageID)
                 .append("senderID", senderID)
@@ -115,7 +115,7 @@ public class Message {
                 .append("receiver", receiver);
     }
 
-    // Getters
+    // getters
     public String getMessageID() {
         return messageID;
     }

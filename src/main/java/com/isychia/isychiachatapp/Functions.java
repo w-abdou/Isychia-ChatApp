@@ -10,7 +10,7 @@ public class Functions implements AllFunctions {
 
     @Override
     public String getId(String name) throws RemoteException {
-        return name + "_id"; // example logic
+        return name + "_id";
     }
 
     @Override

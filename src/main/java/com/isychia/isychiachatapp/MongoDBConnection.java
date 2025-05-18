@@ -36,7 +36,7 @@ public class MongoDBConnection {
         collection.insertOne(message.toDocument());
     }
 
-    // ✅ NEW: Fetch unread messages for a user
+    // fetch unread msg for a user
     public List<Message> getUnreadMessagesForUser(String receiverID) {
         MongoCollection<Document> collection = database.getCollection("messages");
 
@@ -48,16 +48,10 @@ public class MongoDBConnection {
 
         List<Message> messages = new ArrayList<>();
         for (Document doc : collection.find(filter)) {
-            messages.add(new Message(doc)); // requires the new Message(Document) constructor
+            messages.add(new Message(doc));
         }
 
         return messages;
     }
 
-
-    // ✅ Optional: Mark message as read
-    public void markMessageAsRead(String messageID) {
-        MongoCollection<Document> collection = database.getCollection("messages");
-        collection.updateOne(Filters.eq("messageID", messageID), new Document("$set", new Document("isRead", true)));
-    }
 }
