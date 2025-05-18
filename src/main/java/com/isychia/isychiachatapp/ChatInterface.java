@@ -77,6 +77,17 @@ public class ChatInterface {
     public void initialize(User user) {
         this.currentUser = user;
         initializeChatData();
+
+        // Register RMI listener for this user
+        try {
+            if (rmiStub != null) {
+                ChatUpdateListener listener = new ChatUpdateListenerImpl(this);
+                rmiStub.registerListener(user.getUsername(), listener);
+                System.out.println("Registered RMI listener for user: " + user.getUsername());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void createChatScene() {
@@ -370,7 +381,7 @@ public class ChatInterface {
         // Replace the chat window with the welcome panel in the center area
         mainLayout.setCenter(welcomePanel);
 
-        stopMessagePolling(); // 👈 Stop polling when chat is closed
+        // 👈 Stop polling when chat is closed
 
     }
 
@@ -400,7 +411,6 @@ public class ChatInterface {
             }
 
             scrollPane.setVvalue(1.0); // scroll to bottom
-            startMessagePolling();
         }
     }
 
@@ -586,42 +596,10 @@ public class ChatInterface {
 
 
 
-    private void startMessagePolling() {
-        stopMessagePolling(); // Stop any existing thread
-
-        pollingActive = true;
-        messagePollingThread = new Thread(() -> {
-            while (pollingActive) {
-                try {
-                    Thread.sleep(2000); // Poll every 2 seconds
-
-                    if (currentChatUser != null) {
-                        // Load only new messages from DB and update UI
-                        loadMessagesFromDatabase(currentChatUser);
-
-                        javafx.application.Platform.runLater(() -> {
-                            // ONLY scroll, no need to clear and reload
-                            scrollPane.setVvalue(1.0);
-                        });
-                    }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-        });
-
-        messagePollingThread.setDaemon(true);
-        messagePollingThread.start();
-    }
 
 
-private void stopMessagePolling() {
-    pollingActive = false;
-    if (messagePollingThread != null && messagePollingThread.isAlive()) {
-        messagePollingThread.interrupt();
-    }
-}
+
+
     public void registerForRMINotifications() {
         try {
             AllFunctions stub = RMIClient.connect();
@@ -636,15 +614,10 @@ private void stopMessagePolling() {
     }
     private void connectToRMIServer() {
         try {
-            Registry registry = LocateRegistry.getRegistry("localhost", 1234); // match your server settings
-            AllFunctions stub = (AllFunctions) registry.lookup("ChatService");
-
-            ChatUpdateListener listener = new ChatUpdateListenerImpl(this);
-            stub.registerListener(currentUser.getUsername(), listener);
-
-            // Save the stub to use it when sending messages
-            this.rmiStub = stub;
-
+            this.rmiStub = RMIClient.connect();
+            if (this.rmiStub != null) {
+                System.out.println("Successfully connected to RMI server");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -652,30 +625,41 @@ private void stopMessagePolling() {
 
 
     public void handleIncomingMessageNotification(String senderUsername, String messageText) {
-        if (senderUsername.equals(currentChatUser)) {
+        Platform.runLater(() -> {
+            // Create message box
             HBox messageBox = new HBox();
             messageBox.setAlignment(Pos.CENTER_LEFT);
             messageBox.setPadding(new Insets(5, 0, 5, 0));
 
             VBox messageBubble = new VBox(3);
-            messageBubble.setStyle("-fx-background-color: #e0e0e0; -fx-background-radius: 18; -fx-padding: 10 15 10 15;");
+            messageBubble.setStyle("-fx-background-color: #40444B; -fx-background-radius: 18; -fx-padding: 10 15 10 15;");
             messageBubble.setMaxWidth(400);
 
             Label messageLabel = new Label(messageText);
             messageLabel.setWrapText(true);
-            messageLabel.setStyle("-fx-text-fill: black;");
+            messageLabel.setStyle("-fx-text-fill: white;");
 
             String timestamp = new SimpleDateFormat("HH:mm").format(new Date());
             Label timeLabel = new Label(timestamp);
-            timeLabel.setStyle("-fx-text-fill: rgba(0, 0, 0, 0.5); -fx-font-size: 10px;");
+            timeLabel.setStyle("-fx-text-fill: rgba(255, 255, 255, 0.7); -fx-font-size: 10px;");
 
             messageBubble.getChildren().addAll(messageLabel, timeLabel);
             messageBox.getChildren().add(messageBubble);
 
-            messagesContainer.getChildren().add(messageBox);
-            scrollPane.setVvalue(1.0);
-        }
+            // Add to chat history
+            if (!chatHistories.containsKey(senderUsername)) {
+                chatHistories.put(senderUsername, createNewChatHistory());
+            }
+            chatHistories.get(senderUsername).getChildren().add(messageBox);
+
+            // If this is the current chat, update the display
+            if (senderUsername.equals(currentChatUser)) {
+                messagesContainer.getChildren().add(messageBox);
+                scrollPane.setVvalue(1.0);
+            }
+        });
     }
+
 
 
 }
