@@ -15,7 +15,7 @@ public class UserService {
     private final MongoDatabase database;
     private User currentUser;
 
-    // mongoDB connection and collection setup
+    // MongoDB connection
     public UserService() {
         MongoClient mongoClient = MongoClients.create("mongodb+srv://faridasoliman:farida123@isychia.bbrqq0g.mongodb.net/?retryWrites=true&w=majority&appName=Isychia");
         this.database = mongoClient.getDatabase("IsychiaDB");
@@ -23,7 +23,8 @@ public class UserService {
     }
 
 
-    // login to authenticate user
+
+    // Login method to authenticate user
     public boolean login(String username, String password) {
         Document user = userCollection.find(
                 and(
@@ -33,22 +34,22 @@ public class UserService {
         ).first();
 
         if (user != null) {
-            currentUser = User.fromDocument(user); // Convert Document to User
+            currentUser = User.fromDocument(user);
             return true;
         } else {
             return false;
         }
     }
 
-
+    // Get current logged-in user
     public User getCurrentUser() {
         return currentUser;
     }
 
 
-
+    // Register (baad el fix)
     public boolean registerUser(String username, String email, String password) {
-      // if username aw email exists in the db
+        // Check if username OR email already exists
         Document existingUser = userCollection.find(
                 or(
                         eq("username", username),
@@ -57,7 +58,7 @@ public class UserService {
         ).first();
 
         if (existingUser != null) {
-            return false; // email aw username already in db
+            return false;
         }
 
         Document newUser = new Document("username", username)
@@ -66,9 +67,12 @@ public class UserService {
 
         userCollection.insertOne(newUser);
         return true;
+
+
     }
 
 
+    // Get all users as User objects
     public List<User> getAllUsers() {
         List<User> users = new ArrayList<>();
         FindIterable<Document> iterable = userCollection.find();
@@ -78,7 +82,7 @@ public class UserService {
         return users;
     }
 
-    // logout
+    // Logout method 
     public void logout() {
         currentUser = null;
         System.out.println("User has been logged out.");
