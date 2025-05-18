@@ -7,17 +7,19 @@ public class User {
     private String email;
     private String password;
 
-    // def constructor
-    public User() {}
 
-    // constructor with all fields
+    public User() {
+    }
+
+
     public User(String username, String email, String password) {
         this.username = username;
-        this.email = email;   // Add email to the constructor
+        this.email = email;
         this.password = password;
     }
 
-    // convert document to user
+
+    // Document to User
     public static User fromDocument(Document doc) {
         return new User(
                 doc.getString("username"),
@@ -26,14 +28,14 @@ public class User {
         );
     }
 
-    // convert User to mongo document
+    // Convert User to Document
     public Document toDocument() {
         return new Document("username", username)
                 .append("email", email)
                 .append("password", password);
     }
 
-    // getters and setters
+    // Getters and Setters
     public String getUsername() {
         return username;
     }
