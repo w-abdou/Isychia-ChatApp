@@ -12,7 +12,7 @@ import java.util.Base64;
 
 
 public class Encryption {
-    // generate an RSA key pair
+    // Generate an RSA key pair
     public static KeyPair generateRSAKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
         keyPairGen.initialize(2048);
@@ -20,16 +20,19 @@ public class Encryption {
     }
 
 
-    // AES encryption
+
+    // AES Encryption
     public static String encryptMessageAES(String plainText, SecretKey key, byte[] iv) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
         cipher.init(Cipher.ENCRYPT_MODE, key, ivSpec);
         byte[] encryptedBytes = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
         return Base64.getEncoder().encodeToString(encryptedBytes);
+
+
     }
 
-    // AES decryption
+    // AES Decryption
     public static String decryptMessageAES(String encryptedText, SecretKey key, byte[] iv) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
@@ -38,7 +41,7 @@ public class Encryption {
         return new String(decryptedBytes, StandardCharsets.UTF_8);
     }
 
-    // encrypt AES key
+    // Encrypt AES key using RSA
     public static String encryptKeyRSA(SecretKey key, PublicKey publicKey) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
@@ -46,7 +49,7 @@ public class Encryption {
         return Base64.getEncoder().encodeToString(encryptedKey);
     }
 
-    // decrypt AES key
+    // Decrypt AES key using RSA
     public static SecretKey decryptKeyRSA(String encryptedKey, PrivateKey privateKey) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
@@ -54,7 +57,7 @@ public class Encryption {
         return new SecretKeySpec(decryptedKeyBytes, "AES");
     }
 
-    // Diffie-Hellman Key Exchange
+    // Perform Diffie-Hellman Key Exchange
     public static SecretKey performDiffieHellmanExchange(PublicKey publicKey, PrivateKey privateKey) throws Exception {
         KeyAgreement keyAgreement = KeyAgreement.getInstance("DH");
         keyAgreement.init(privateKey);
@@ -62,7 +65,8 @@ public class Encryption {
         return new SecretKeySpec(keyAgreement.generateSecret(), "AES");
     }
 
-    // random AES symmetric key
+
+    // Generate a random AES symmetric key
     public static SecretKey generateSymmetricKey() throws NoSuchAlgorithmException {
         KeyGenerator keyGen = KeyGenerator.getInstance("AES");
         keyGen.init(256);
