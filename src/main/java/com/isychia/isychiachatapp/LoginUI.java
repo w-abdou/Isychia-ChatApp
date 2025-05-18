@@ -22,6 +22,7 @@ public class LoginUI {
     private Label errorLabel;
     private UserService userService;
 
+    // Callbacks
     private Runnable showRegistrationScreen;
     private LoginCallback loginCallback;
 
@@ -41,18 +42,18 @@ public class LoginUI {
         loginContainer.getStyleClass().add("auth-container");
         loginContainer.setAlignment(Pos.CENTER);
 
-        // logo
+        // Logo
         Circle logo = new Circle(50);
         logo.setFill(Color.rgb(114, 137, 218));
 
-        // title
+        // Title
         Label title = new Label("IsychiaChat");
         title.getStyleClass().add("auth-title");
 
         Label subtitle = new Label("Log in to your account");
         subtitle.getStyleClass().add("auth-subtitle");
 
-        // form fields
+        // Form fields
         usernameOrEmailField = new TextField();
         usernameOrEmailField.setPromptText("Email or Username");
         usernameOrEmailField.getStyleClass().add("auth-field");
@@ -61,17 +62,17 @@ public class LoginUI {
         passwordField.setPromptText("Password");
         passwordField.getStyleClass().add("auth-field");
 
-        // error message
+        // Error message
         errorLabel = new Label("");
         errorLabel.getStyleClass().add("error-label");
         errorLabel.setVisible(false);
 
-        // login button
+        // Login button
         Button loginButton = new Button("Log In");
         loginButton.getStyleClass().add("auth-button");
         loginButton.setOnAction(e -> handleLogin());
 
-        // reg link
+        // Register link
         HBox registerLinkContainer = new HBox();
         registerLinkContainer.setAlignment(Pos.CENTER);
         Label registerPrompt = new Label("Don't have an account? ");
@@ -99,18 +100,20 @@ public class LoginUI {
     }
 
     private void handleLogin() {
-        // clear previous errors
+
         errorLabel.setText("");
 
-        // get input values from form fields
+        // Get input values from form fields
         String username = usernameOrEmailField.getText();
         String password = passwordField.getText();
 
+        // Validate inputs
         if (username.isEmpty() || password.isEmpty()) {
             showError("Username and password are required");
             return;
         }
 
+        // Try to login
         boolean loginSuccessful = userService.login(username, password);
         if (loginSuccessful) {
             User user = userService.getCurrentUser();
@@ -143,10 +146,13 @@ public class LoginUI {
 
     public void setLoginCallback(LoginCallback loginCallback) {
         this.loginCallback = loginCallback;
+
+
     }
 
-    public List<User> getAllUsers() {
 
+    public List<User> getAllUsers() {
+        // Assuming you are using MongoDB:
         List<User> users = new ArrayList<>();
         for (Document doc : userCollection.find()) {
             users.add(User.fromDocument(doc));
@@ -154,7 +160,7 @@ public class LoginUI {
         return users;
     }
 
-
+    // Callback interface
     public interface LoginCallback {
         void onLoginSuccess(User user);
     }
