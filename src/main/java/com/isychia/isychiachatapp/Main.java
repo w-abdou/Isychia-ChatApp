@@ -16,37 +16,40 @@ public class Main extends Application {
         primaryStage.setTitle("IsychiaChat");
 
 
-        // initialize services
+        // Initialize services
         userService = new UserService();
-        // UI components
+        // Initialize UI components
         initializeUI();
 
-        //nav
+        // Set up navigation
         setupNavigation();
 
-        // login first
+        // Start with login screen
         showLoginScreen();
 
         primaryStage.show();
+
+
     }
 
     private void initializeUI() {
-
+        // Create UI components
         loginUI = new LoginUI(userService);
         registerUI = new RegisterUI(userService);
         chatInterface = new ChatInterface(userService);
-
+        //MongoDBConnection mongoDBConnection = new MongoDBConnection();
+        //mongoDBConnection.connectToMongo();
     }
 
     private void setupNavigation() {
-
+        // Set up login navigation
         loginUI.setShowRegistrationScreen(this::showRegistrationScreen);
         loginUI.setLoginCallback(this::handleLoginSuccess);
 
-
+        // Set up registration navigation
         registerUI.setShowLoginScreen(this::showLoginScreen);
 
-
+        // Set up chat navigation
         chatInterface.setOnLogoutAction(this::handleLogout);
     }
 
