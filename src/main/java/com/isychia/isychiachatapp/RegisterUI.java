@@ -22,7 +22,7 @@ public class RegisterUI {
     private MongoCollection<Document> userCollection;
 
 
-
+    // Callback
     private Runnable showLoginScreen;
 
     public RegisterUI(UserService userService) {
@@ -39,16 +39,16 @@ public class RegisterUI {
         emailField.setPrefWidth(280);
 
 
-        //logo
+        // Logo
         Circle logo = new Circle(40);
         logo.setFill(Color.rgb(114, 137, 218));
         logo.setStyle("");
 
-        // title
+        // Title
         Label title = new Label("Create an Account");
         title.getStyleClass().add("auth-title");
 
-        // form fields
+        // Form fields
         usernameField = new TextField();
         usernameField.setPromptText("Username");
         usernameField.getStyleClass().add("auth-field");
@@ -65,7 +65,7 @@ public class RegisterUI {
         confirmPasswordField.setPromptText("Confirm Password");
         confirmPasswordField.getStyleClass().add("auth-field");
 
-        // error message
+        // Error message
         errorLabel = new Label("");
         errorLabel.getStyleClass().add("error-label");
         errorLabel.setVisible(false);
@@ -83,12 +83,12 @@ public class RegisterUI {
         });
 
 
-        // register button
+        // Register button
         Button registerButton = new Button("Register");
         registerButton.getStyleClass().add("auth-button");
         registerButton.setOnAction(e -> handleRegistration());
 
-        // login link
+        // Login link
         HBox loginLinkContainer = new HBox();
         loginLinkContainer.setAlignment(Pos.CENTER);
         Label loginPrompt = new Label("Already have an account? ");
@@ -122,13 +122,13 @@ public class RegisterUI {
         String password = passwordField.getText();
         String confirmPassword = confirmPasswordField.getText();
 
-        // input validation
+        // Input validation
         if (username.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
             showError("All fields are required");
             return;
         }
 
-        // email validation
+        // Email validation
         if (!isValidEmail(email)) {
             showError("Please enter a valid email address");
             return;
@@ -139,11 +139,11 @@ public class RegisterUI {
             return;
         }
 
-        // registration logic
+        // Registration logic
         boolean registrationSuccess = userService.registerUser(username, email, password);
 
         if (registrationSuccess) {
-            // reg was successful
+            // Registration was successful
             // momken ne3ml otp!??
 
             resetForm();
@@ -167,7 +167,11 @@ public class RegisterUI {
     private boolean isValidPassword(String password) {
         String passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/? ])(?=\\S+$).{6,}$";
         return password != null && password.matches(passwordRegex);
+
+
     }
+
+
 
     private boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
