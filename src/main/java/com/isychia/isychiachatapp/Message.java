@@ -14,6 +14,7 @@ import java.util.UUID;
 
 import org.bson.Document;
 
+
 public class Message {
     private String messageID;
     private String senderID;
@@ -31,7 +32,7 @@ public class Message {
 
 
 
-    // constructor for sending messages
+    // Normal Constructor for sending messages
     public Message(String sender, String receiver, String content, String senderID, String receiverID) throws Exception {
         this.messageID = UUID.randomUUID().toString();
         this.senderID = senderID;
@@ -43,9 +44,11 @@ public class Message {
         this.sender = sender;
         this.receiver = receiver;
         this.encryptedContent = encryptAndSendMessage(content);
+
+
     }
 
-    // constructor to load from mongo
+    // Constructor to load mn el doc in db
     public Message(Document doc) {
         this.messageID = doc.getString("messageID");
         this.senderID = doc.getString("senderID");
@@ -59,7 +62,7 @@ public class Message {
         this.receiver = doc.getString("receiver");
     }
 
-    // encrypt content
+    // Encrypt content
     public String encryptAndSendMessage(String content) throws Exception {
         if (content == null || content.trim().isEmpty()) {
             throw new IllegalArgumentException("Message content cannot be empty.");
@@ -76,7 +79,7 @@ public class Message {
         return Base64.getEncoder().encodeToString(encryptedData);
     }
 
-    //decrypt for display
+    //Decrypt
     public String decryptReceivedMessage() throws Exception {
         if (encryptedContent == null || encryptedContent.trim().isEmpty()) {
             throw new IllegalArgumentException("No encrypted message found.");
@@ -101,7 +104,7 @@ public class Message {
         return Base64.getEncoder().encodeToString(ivBytes);
     }
 
-    // convert to the mongo document
+    // Convert todocument
     public Document toDocument() {
         return new Document("messageID", messageID)
                 .append("senderID", senderID)
@@ -115,7 +118,7 @@ public class Message {
                 .append("receiver", receiver);
     }
 
-    // getters
+    // Getters
     public String getMessageID() {
         return messageID;
     }
