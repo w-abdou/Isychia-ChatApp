@@ -11,4 +11,8 @@ public interface AllFunctions extends Remote {
 
     void notifyNewMessage(String receiverUsername, String senderUsername, String message) throws RemoteException;
 
+
 }
+
+
+
