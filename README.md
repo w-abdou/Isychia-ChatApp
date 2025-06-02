@@ -102,7 +102,7 @@ Or run via your IDE (ensure JavaFX is properly configured).
 2. Messages are encrypted with the recipient’s public key and can only be decrypted using their private key.
 3. This ensures that only the intended recipient can view the message contents.
 
-* **Future Improvements**
+## Future Improvements
 	•	Transition to Web App (in progress)
 	•	Add RSA for key exchange (hybrid encryption)
 	•	File sharing support
